@@ -1,0 +1,55 @@
+Arguments: 
+  /home/steve/.nvm/versions/node/v10.16.3/bin/node /home/steve/.yarn/bin/yarn.js install
+
+PATH: 
+  /home/steve/.yarn/bin:/home/steve/.config/yarn/global/node_modules/.bin:/home/steve/.nvm/versions/node/v10.16.3/bin:/usr/local/go/bin/:/home/steve/src/flutter/bin/:/home/steve/src/flutter/:/usr/local/bin:/home/steve/.local/bin:/home/steve/.yarn/bin:/home/steve/.config/yarn/global/node_modules/.bin:/home/steve/.nvm/versions/node/v10.16.3/bin:/usr/local/go/bin/:/home/steve/src/flutter/bin/:/home/steve/src/flutter/:/usr/local/bin:/home/steve/.local/bin:/home/steve/.yarn/bin:/home/steve/.config/yarn/global/node_modules/.bin:/home/steve/.nvm/versions/node/v10.16.3/bin:/usr/local/go/bin/:/home/steve/src/flutter/bin/:/home/steve/src/flutter/:/usr/local/bin:/home/steve/.local/bin:/home/steve/bin:/usr/local/bin:/usr/bin:/bin:/snap/bin
+
+Yarn version: 
+  1.19.1
+
+Node version: 
+  10.16.3
+
+Platform: 
+  linux x64
+
+Trace: 
+  SyntaxError: /home/steve/src/peer-graphql-npm/package.json: Unexpected token } in JSON at position 235
+      at JSON.parse (<anonymous>)
+      at /home/steve/.yarn/lib/cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (/home/steve/.yarn/lib/cli.js:304:30)
+      at /home/steve/.yarn/lib/cli.js:315:13
+
+npm manifest: 
+  {
+    "name": "peer-graphql",
+    "version": "1.0.0",
+    "description": "GraphQL sourced from peers",
+    "main": "index.js",
+    "license": "MIT",
+    "devDependencies": {
+      "@types/node": "^14.11.10",
+      "@types/relay-runtime": "^10.0.4",
+    },
+    "scripts": {
+      "build": "tsc",
+      "build:check": "tsc --noEmit"
+    },
+    "files": [
+      "lib"
+    ],
+    "dependencies": {
+      "graphql": "^15.3.0",
+      "fp-ts": "^2.8.4",
+      "io-ts": "^2.2.11",
+      "tweetnacl": "^1.0.3",
+      "typescript": "^4.0.3"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

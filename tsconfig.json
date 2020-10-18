@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+      "target": "es6",
+      "lib": ["dom", "dom.iterable", "esnext"],
+      "allowJs": true,
+      "skipLibCheck": true,
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
+      "strict": true,
+      "forceConsistentCasingInFileNames": true,
+      "module": "es6",
+      "moduleResolution": "node",
+      "resolveJsonModule": true,
+      "jsx": "react",
+      "typeRoots": ["src/customTypings"],
+      "declaration": true,
+      "outDir": "lib",
+      "rootDir": "src",
+      "types": ["node"],
+      "importHelpers": true,
+    },
+    "include": ["src"],
+    "exclude": [
+      "lib",
+      "node_modules",
+      "src/**/*.spec.ts"
+    ]
+  }
+  
