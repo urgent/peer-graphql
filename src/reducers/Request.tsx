@@ -6,11 +6,10 @@ import * as t from 'io-ts'
 import { decode } from '../peer'
 import { schema, root } from '../graphql/resolve'
 import { doSend } from '../websocket'
-import { Reducer } from '../reducer'
 import { RES } from './Response'
 import { sign, SignKeyPair } from 'tweetnacl'
 import * as Stablelib from '@stablelib/base64'
-import {read, write, del} from '../index'
+import {del, read, write} from '../index'
 import graphql from 'babel-plugin-relay/macro'
 
 // define types for decode
@@ -76,17 +75,6 @@ export async function send (response: Promise<RES>): Promise<void> {
   return pipe(await response, JSON.stringify, doSend)
 }
 
-//extend interface
-declare module '../reducer' {
-  export interface Reducer {
-    request: (i: { delay: number }) => TE.TaskEither<Error, Promise<void>>
-  }
-
-  export interface URI2Type {
-    request: REQ
-  }
-}
-
 function delay (): (
   ma: TE.TaskEither<Error, REQ>
 ) => TE.TaskEither<Error, REQ> {
@@ -108,9 +96,10 @@ function check (): (
           async error => E.left(error),
           async (request:REQ) => {
             if(await read(`client:Response:${request.hash}`)) {
-              return E.right(request)
-            } else {
+              del(`client:Response:${request.hash}`)
               return E.left(new Error('Request already fulfilled'))
+            } else {
+              return E.right(request)
             }
           }
         )
@@ -119,7 +108,7 @@ function check (): (
     })
 }
 
-Reducer.prototype.request = flow(
+export const request = flow(
   decode(Request),
   TE.fromEither,
   TE.mapLeft(err => new Error(String(err))),

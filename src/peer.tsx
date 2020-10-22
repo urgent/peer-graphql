@@ -4,19 +4,13 @@ import { failure } from 'io-ts/lib/PathReporter'
 import { flow, pipe } from 'fp-ts/lib/function'
 import { TaskEither } from 'fp-ts/lib/TaskEither'
 import { IOEither } from 'fp-ts/lib/IOEither'
-import { Reducer, URI2Type, Props } from './reducer'
-import './reducers/Request'
-import './reducers/Response'
-import './reducers/Configure'
+import { request } from  './reducers/Request'
+import { response } from './reducers/Response'
 
-type URIS = keyof URI2Type
-
-declare module './reducer' {
-  export interface Props {
-    uri: URIS
+interface Props {
+    uri: 'request' | 'response'
     delay: number
   }
-}
 
 /**
  * Enforces return value from reducer to be callable
@@ -43,7 +37,15 @@ export const reduce = (evt: MessageEvent): Reduction =>
         pipe(Object.assign({ uri: '', ...json }), E.right)
     ),
     // tuple for testing
-    E.map((props: Props) => [Reducer.prototype[props.uri](props), props])
+    E.map((props: Props) => {
+      switch (props.uri) {
+        case 'request':
+          return [request(props), props]
+        case 'response':
+          return [response(props), props]
+      }
+      
+    })
   )
 
 /**

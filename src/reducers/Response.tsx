@@ -4,7 +4,6 @@ import * as t from 'io-ts'
 import { decode } from '../peer'
 import { EventEmitter } from 'events'
 import { eventEmitter } from '../eventEmitter'
-import { Reducer } from '../reducer'
 import graphql from 'babel-plugin-relay/macro'
 import {read, write, del} from '../index'
 
@@ -15,16 +14,6 @@ const Response = t.type({
 })
 
 export type RES = t.TypeOf<typeof Response>
-
-declare module '../reducer' {
-  export interface Reducer {
-    response: (i: unknown) => IOE.IOEither<Error, void>
-  }
-
-  export interface URI2Type {
-    response: RES
-  }
-}
 
 const ResponseQuery = graphql`
   query ResponseQuery($hash: String) {
@@ -51,7 +40,7 @@ function emit (eventEmitter: EventEmitter) {
     eventEmitter.emit((await response).hash, { data: (await response).data })
 }
 
-Reducer.prototype.response = flow(
+export const response = flow(
   decode(Response),
   IOE.fromEither,
   IOE.chain<Error, RES, Promise<RES>>(flow(cache, IOE.right)),

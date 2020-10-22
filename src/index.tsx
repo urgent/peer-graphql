@@ -13,7 +13,7 @@ import { createOperationDescriptor, getRequest, GraphQLTaggedNode, Environment }
 const respond = (eventEmitter: EventEmitter) => (hash: string) =>
   new Promise((resolve, reject) => {
     eventEmitter.once(hash, data => {
-      eventEmitter.emit('state-delete', {key:`client:Response:${hash}`})
+      del(`client:Response:${hash}`)
       resolve(data)
     })
     setTimeout(() => {
