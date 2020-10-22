@@ -3,12 +3,13 @@ import * as R from 'fp-ts/lib/Reader'
 import { fanout } from 'fp-ts/lib/Strong'
 import { pipe, flow } from 'fp-ts/lib/function'
 import { eventEmitter } from './eventEmitter'
-import { doSend } from './websocket'
+import { doSend, socket } from './websocket'
 import { digestMessage } from './peer'
 import { format, runtime, } from './graphql/graphQLResponseWithData'
 import {GraphQLSchema} from 'graphql'
 import { commitLocalUpdate } from 'react-relay'
 import { createOperationDescriptor, getRequest, GraphQLTaggedNode, Environment } from 'relay-runtime'
+import { relay } from './peer'
 
 const respond = (eventEmitter: EventEmitter) => (hash: string) =>
   new Promise((resolve, reject) => {
@@ -25,6 +26,7 @@ const respond = (eventEmitter: EventEmitter) => (hash: string) =>
 const _respond = respond(eventEmitter)
 
 export function fetchPeer(schema:GraphQLSchema, root:unknown) {
+  socket.onMessage(relay(schema,root))
   return  async (operation: any, variables: any) => {
     return pipe(
       // hash graphql query for unique listener

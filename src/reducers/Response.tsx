@@ -5,7 +5,7 @@ import { decode } from '../peer'
 import { EventEmitter } from 'events'
 import { eventEmitter } from '../eventEmitter'
 import graphql from 'babel-plugin-relay/macro'
-import {read, write, del} from '../index'
+import {read, write } from '../index'
 
 const Response = t.type({
   uri: t.literal('response'),

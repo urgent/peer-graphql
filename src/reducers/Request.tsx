@@ -4,10 +4,10 @@ import * as E from 'fp-ts/lib/Either'
 import { pipe, flow } from 'fp-ts/lib/function'
 import * as t from 'io-ts'
 import { decode } from '../peer'
-import { schema, root } from '../graphql/resolve'
 import { doSend } from '../websocket'
 import { RES } from './Response'
 import { sign, SignKeyPair } from 'tweetnacl'
+import {GraphQLSchema} from 'graphql'
 import * as Stablelib from '@stablelib/base64'
 import {del, read, write} from '../index'
 import graphql from 'babel-plugin-relay/macro'
@@ -58,17 +58,19 @@ export async function secret (): Promise<SignKeyPair> {
   }
 }
 
-export async function query (request: Promise<REQ>): Promise<RES> {
-  return pipe(
-    await _graphql(schema, (await request).query, root),
-    async (result: ExecutionResult) =>
-      ({
-        uri: 'response',
-        hash: (await request).hash,
-        data: result.data,
-        signature: sign(Stablelib.decode((await request).hash), (await secret())['secretKey'])
-      } as RES)
-  )
+export function query(schema:GraphQLSchema, root:unknown) {
+  return async (request: Promise<REQ>): Promise<RES> => {
+    return pipe(
+      await _graphql(schema, (await request).query, root),
+      async (result: ExecutionResult) =>
+        ({
+          uri: 'response',
+          hash: (await request).hash,
+          data: result.data,
+          signature: sign(Stablelib.decode((await request).hash), (await secret())['secretKey'])
+        } as RES)
+    )
+  }
 }
 
 export async function send (response: Promise<RES>): Promise<void> {
@@ -108,12 +110,12 @@ function check (): (
     })
 }
 
-export const request = flow(
+export const request = (schema:GraphQLSchema, root:unknown) => flow(
   decode(Request),
   TE.fromEither,
   TE.mapLeft(err => new Error(String(err))),
   delay(),
   check(),
-  TE.chain<Error, Promise<REQ>, Promise<RES>>(flow(query, TE.right)),
+  TE.chain<Error, Promise<REQ>, Promise<RES>>(flow(query(schema, root), TE.right)),
   TE.chain<Error, Promise<RES>, Promise<void>>(flow(send, TE.right))
 )

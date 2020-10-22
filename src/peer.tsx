@@ -6,6 +6,7 @@ import { TaskEither } from 'fp-ts/lib/TaskEither'
 import { IOEither } from 'fp-ts/lib/IOEither'
 import { request } from  './reducers/Request'
 import { response } from './reducers/Response'
+import {GraphQLSchema} from 'graphql'
 
 interface Props {
     uri: 'request' | 'response'
@@ -25,7 +26,7 @@ export type Reduction = E.Either<
  * @param {MessageEvent} evt WebSocket payload
  * @return {Reduction} Error or task of reducer
  */
-export const reduce = (evt: MessageEvent): Reduction =>
+export const reduce = (schema:GraphQLSchema, root:unknown) => (evt: MessageEvent): Reduction =>
   pipe(
     E.parseJSON(evt.data, E.toError),
     E.mapLeft(err => {
@@ -40,7 +41,7 @@ export const reduce = (evt: MessageEvent): Reduction =>
     E.map((props: Props) => {
       switch (props.uri) {
         case 'request':
-          return [request(props), props]
+          return [request(schema, root)(props), props]
         case 'response':
           return [response(props), props]
       }
@@ -53,8 +54,8 @@ export const reduce = (evt: MessageEvent): Reduction =>
  * @param {MessageEvent} evt WebSocket payload
  * @return {Reduction} Error or results of reducer call
  */
-export const relay = flow(
-  reduce,
+export const relay = (schema:GraphQLSchema, root:unknown) => flow(
+  reduce(schema,root),
   E.map(([reduction]) => reduction())
 )
 
