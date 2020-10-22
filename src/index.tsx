@@ -5,10 +5,10 @@ import { pipe, flow } from 'fp-ts/lib/function'
 import { eventEmitter } from './eventEmitter'
 import { doSend } from './websocket'
 import { digestMessage } from './peer'
-import { format, runtime } from './graphql/graphQLResponseWithData'
+import { format, runtime, } from './graphql/graphQLResponseWithData'
+import {GraphQLSchema} from 'graphql'
 import { commitLocalUpdate } from 'react-relay'
-import {Environment} from 'relay-runtime'
-import { createOperationDescriptor, getRequest, GraphQLTaggedNode } from 'relay-runtime'
+import { createOperationDescriptor, getRequest, GraphQLTaggedNode, Environment } from 'relay-runtime'
 
 const respond = (eventEmitter: EventEmitter) => (hash: string) =>
   new Promise((resolve, reject) => {
@@ -24,7 +24,7 @@ const respond = (eventEmitter: EventEmitter) => (hash: string) =>
 
 const _respond = respond(eventEmitter)
 
-export function fetchPeer() {
+export function fetchPeer(schema:GraphQLSchema, ) {
   return  async (operation: any, variables: any) => {
     return pipe(
       // hash graphql query for unique listener

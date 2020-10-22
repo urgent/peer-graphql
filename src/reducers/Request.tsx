@@ -1,7 +1,7 @@
 import { graphql as _graphql, ExecutionResult } from 'graphql'
 import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
-import { pipe, flow, identity } from 'fp-ts/lib/function'
+import { pipe, flow } from 'fp-ts/lib/function'
 import * as t from 'io-ts'
 import { decode } from '../peer'
 import { schema, root } from '../graphql/resolve'
