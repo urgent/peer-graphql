@@ -23,15 +23,6 @@ const Request = t.type({
 
 export type REQ = t.TypeOf<typeof Request>
 
-/*export async function check (request: REQ): Promise<boolean> {
-  if (await read(`client:Response:${request.hash}`)) {
-    del(request.hash)
-    return false
-  } else {
-    return true
-  }
-}*/
-
 const KeyQuery = graphql`
   query RequestQuerySecret($hash: String) {
     response(hash: $hash) {
@@ -112,19 +103,19 @@ function check (): (
 ) => TE.TaskEither<Error, Promise<REQ>> {
   return ma => () =>
     new Promise( async(resolve) => {
-      const data = await read(`client:Response:`);
       ma().then(flow(
         E.fold(
           async error => E.left(error),
           async (request:REQ) => {
-            if(data) {
+            if(await read(`client:Response:${request.hash}`)) {
               return E.right(request)
             } else {
               return E.left(new Error('Request already fulfilled'))
             }
           }
         )
-      ))    
+      ),
+      resolve)    
     })
 }
 

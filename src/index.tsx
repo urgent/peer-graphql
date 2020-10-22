@@ -63,8 +63,6 @@ export const del = (key:string) => {
   eventEmitter.emit('state-delete',key)
 }
 
-// eventEmitter.emit('state-write',{key, value})
-
 export const manage = (environment:Environment) => {
   eventEmitter.on('state-read', ({key}) => {
     eventEmitter.emit(key,environment.getStore()
