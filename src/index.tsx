@@ -24,7 +24,7 @@ const respond = (eventEmitter: EventEmitter) => (hash: string) =>
 
 const _respond = respond(eventEmitter)
 
-export function fetchPeer(schema:GraphQLSchema, ) {
+export function fetchPeer(schema:GraphQLSchema, root:unknown) {
   return  async (operation: any, variables: any) => {
     return pipe(
       // hash graphql query for unique listener
