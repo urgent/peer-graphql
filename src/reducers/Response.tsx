@@ -5,10 +5,8 @@ import { decode } from '../peer'
 import { EventEmitter } from 'events'
 import { eventEmitter } from '../eventEmitter'
 import { Reducer } from '../reducer'
-import { commitLocalUpdate } from 'react-relay'
-import RelayEnvironment from '../RelayEnvironment'
-import { createOperationDescriptor, getRequest } from 'relay-runtime'
 import graphql from 'babel-plugin-relay/macro'
+import {read, write, del} from '../index'
 
 const Response = t.type({
   uri: t.literal('response'),
@@ -37,34 +35,25 @@ const ResponseQuery = graphql`
   }
 `
 
-export function cache (request: RES): IOE.IOEither<Error, RES> {
-  const data = RelayEnvironment.getStore()
-    .getSource()
-    .get(`client:Response:${request.hash}`) as { pair: string }
-  if(!data) {
-    commitLocalUpdate(RelayEnvironment, store => {
-      store.create(`client:Response:${request.hash}`, 'Response')
+export async function cache (request: RES): Promise<RES> {
+  if(!(await read(`client:Response:${request.hash}`))) {
+    write({
+      key:`client:Response:${request.hash}`, 
+      type:'Response', 
+      query: ResponseQuery
     })
   }
-
-  // used for gc
-  const concreteRequest = getRequest(ResponseQuery)
-  const operation = createOperationDescriptor(concreteRequest, {
-    hash: request.hash
-  })
-  RelayEnvironment.retain(operation)
-
-  return IOE.right(request)
+  return request
 }
 
 function emit (eventEmitter: EventEmitter) {
-  return (response: RES) =>
-    eventEmitter.emit(response.hash, { data: response.data })
+  return async (response: Promise<RES>) =>
+    eventEmitter.emit((await response).hash, { data: (await response).data })
 }
 
 Reducer.prototype.response = flow(
   decode(Response),
   IOE.fromEither,
-  IOE.chain(cache),
-  IOE.map<RES, void>(emit(eventEmitter))
+  IOE.chain<Error, RES, Promise<RES>>(flow(cache, IOE.right)),
+  IOE.map<Promise<RES>, void>(emit(eventEmitter))
 )

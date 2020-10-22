@@ -13,7 +13,6 @@ socket.onopen = function (evt: MessageEvent) {
 socket.onclose = function (evt: CloseEvent) {
   onClose(evt)
 }
-socket.onmessage = relay
 
 socket.onerror = function (evt: MessageEvent) {
   onError(evt)
