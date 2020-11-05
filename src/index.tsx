@@ -26,7 +26,7 @@ const respond = (eventEmitter: EventEmitter) => (hash: string) =>
 const _respond = respond(eventEmitter)
 
 export function fetchPeer(schema:GraphQLSchema, root:unknown) {
-  socket.onMessage(relay(schema,root))
+  socket.onmessage = relay(schema,root)
   return  async (operation: any, variables: any) => {
     return pipe(
       // hash graphql query for unique listener

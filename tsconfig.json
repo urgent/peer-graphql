@@ -18,6 +18,7 @@
       "rootDir": "src",
       "types": ["node"],
       "importHelpers": true,
+      "sourceMap": true,
     },
     "include": ["src"],
     "exclude": [

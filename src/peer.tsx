@@ -18,7 +18,7 @@ interface Props {
  */
 export type Reduction = E.Either<
   Error,
-  [TaskEither<Error, Promise<void>> | IOEither<Error, void>, Props]
+  [TaskEither<Error, void> | IOEither<Error, void>, Props]
 >
 
 /**
@@ -32,20 +32,17 @@ export const reduce = (schema:GraphQLSchema, root:unknown) => (evt: MessageEvent
     E.mapLeft(err => {
       return new Error(String(err))
     }),
-    E.chain(
-      // need to widen json. Indexing for extensibility complicates type checks
-      (json: any): E.Either<Error, Props> =>
-        pipe(Object.assign({ uri: '', ...json }), E.right)
+    E.map(
+      (json: any)=>json as Props
     ),
-    // tuple for testing
     E.map((props: Props) => {
       switch (props.uri) {
-        case 'request':
-          return [request(schema, root)(props), props]
-        case 'response':
-          return [response(props), props]
+          case 'request':
+              return [request(schema, root)(props), props];
+              
+          case 'response':
+              return [response(props), props];
       }
-      
     })
   )
 

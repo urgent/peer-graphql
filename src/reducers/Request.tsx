@@ -17,13 +17,13 @@ const Request = t.type({
   uri: t.literal('request'),
   hash: t.string,
   query: t.string,
-  variables: t.record(t.string, t.string)
+  variables: t.record(t.string, t.string),
 })
 
 export type REQ = t.TypeOf<typeof Request>
 
 const KeyQuery = graphql`
-  query RequestQuerySecret($hash: String) {
+  query RequestSecretQuery($hash: String) {
     response(hash: $hash) {
       hash
       time
@@ -52,32 +52,35 @@ export async function secret (): Promise<SignKeyPair> {
         publicKey: Stablelib.encode(pair.publicKey)
       }), 
       name:'pair', 
-      query: KeyQuery
+      query: KeyQuery,
+      variables:{hash:`client:Sign.KeyPair`}
     })
     return pair
   }
 }
 
 export function query(schema:GraphQLSchema, root:unknown) {
-  return async (request: Promise<REQ>): Promise<RES> => {
+  return async (request: REQ): Promise<RES> => {
     return pipe(
       await _graphql(schema, (await request).query, root),
-      async (result: ExecutionResult) =>
-        ({
+      async (result: ExecutionResult) => {
+        const secret2 = (await secret())['secretKey'];
+        return ({
           uri: 'response',
-          hash: (await request).hash,
+          hash: request.hash,
           data: result.data,
-          signature: sign(Stablelib.decode((await request).hash), (await secret())['secretKey'])
+          //signature: sign(Stablelib.decode(request.hash), secret2)
         } as RES)
+      }
     )
   }
 }
 
-export async function send (response: Promise<RES>): Promise<void> {
-  return pipe(await response, JSON.stringify, doSend)
+export function send (response: Promise<RES>): void {
+  return pipe(response, JSON.stringify, doSend)
 }
 
-function delay (): (
+export function delay (): (
   ma: TE.TaskEither<Error, REQ>
 ) => TE.TaskEither<Error, REQ> {
   return ma => () =>
@@ -88,34 +91,30 @@ function delay (): (
     })
 }
 
-function check (): (
-  ma: TE.TaskEither<Error, REQ>
-) => TE.TaskEither<Error, Promise<REQ>> {
-  return ma => () =>
-    new Promise( async(resolve) => {
-      ma().then(flow(
-        E.fold(
-          async error => E.left(error),
-          async (request:REQ) => {
-            if(await read(`client:Response:${request.hash}`)) {
-              del(`client:Response:${request.hash}`)
-              return E.left(new Error('Request already fulfilled'))
-            } else {
-              return E.right(request)
-            }
-          }
-        )
-      ),
-      resolve)    
+export const lookup = flow(
+  (request:REQ) =>  ({request, key:`client:Response:${request.hash}`}),
+  ({request, key}) => ({request, key, cache:read(key)}),
+)
+
+export function check(args:{request:REQ, key:string, cache:Promise<unknown>}):TE.TaskEither<Error, REQ> {
+    return () => new Promise( (resolve) => {
+      args.cache.then((result) => {
+        if(result) {
+          del(args.key);
+          resolve(E.left(new Error('Request already fulfilled')));
+        } else {
+          resolve(E.right(args.request))
+        }
+      })
     })
-}
+  }
 
 export const request = (schema:GraphQLSchema, root:unknown) => flow(
   decode(Request),
   TE.fromEither,
   TE.mapLeft(err => new Error(String(err))),
-  delay(),
-  check(),
-  TE.chain<Error, Promise<REQ>, Promise<RES>>(flow(query(schema, root), TE.right)),
-  TE.chain<Error, Promise<RES>, Promise<void>>(flow(send, TE.right))
+  TE.map(lookup),
+  TE.chain(check),
+  TE.chain<Error, REQ, Promise<RES>>(flow(query(schema, root), TE.right)),
+  TE.chain<Error, Promise<RES>, void>(flow(send, TE.right))
 )

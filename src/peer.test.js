@@ -2,6 +2,7 @@ import * as fc from 'fast-check';
 import * as E from 'fp-ts/lib/Either'
 import { pipe, identity } from 'fp-ts/lib/function'
 import { reduce } from './peer'
+import { schema, root } from './graphql/resolve'
 
 function reverse(s) {
     return [...s].reverse().join("");
@@ -21,16 +22,20 @@ const response = {
 }
 
 const fold = (func) => (a) => pipe(
-    reduce({ data: JSON.stringify(a) }),
+    reduce(schema, root)({ data: JSON.stringify(a) }),
     E.fold(
         identity,
         func
     )
 )
 
+function taskDeconstruct(task) {
+    return task;
+}
+
 const hash = fold(([, { hash }]) => hash)
 const state = fold(([, state]) => state)
-const task = fold(([task]) => task)
+const task = fold(taskDeconstruct)
 
 test('let relay then reverse hash be the same as reverse hash then relay', () => {
     fc.assert(
@@ -71,8 +76,9 @@ test('let tasks returned from relay({uri:"request"}) and relay({uri:"response"})
     fc.assert(
         fc.property(
             fc.record(request), fc.record(response), (a, b) => {
-                expect(typeof task(a)).toEqual('function');
-                expect(typeof task(b)).toEqual('function');
+                const aaa = task(a);
+                expect(typeof task(a)[0]).toEqual('function');
+                expect(typeof task(b)[0]).toEqual('function');
             })
     );
 });
