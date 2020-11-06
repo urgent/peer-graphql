@@ -13,12 +13,17 @@ import {del, read, write} from '../index'
 import graphql from 'babel-plugin-relay/macro'
 
 // define types for decode
-const Request = t.type({
+const Header = t.type({
   uri: t.literal('request'),
   hash: t.string,
   query: t.string,
-  variables: t.record(t.string, t.string),
 })
+
+const Body = t.partial({
+  variables: t.record(t.string, t.string)
+})
+
+const Request = t.intersection([Header, Body])
 
 export type REQ = t.TypeOf<typeof Request>
 
@@ -59,38 +64,6 @@ export async function secret (): Promise<SignKeyPair> {
   }
 }
 
-export function query(schema:GraphQLSchema, root:unknown) {
-  return async (request: REQ): Promise<RES> => {
-    return pipe(
-      await _graphql(schema, (await request).query, root),
-      async (result: ExecutionResult) => {
-        const secret2 = (await secret())['secretKey'];
-        return ({
-          uri: 'response',
-          hash: request.hash,
-          data: result.data,
-          //signature: sign(Stablelib.decode(request.hash), secret2)
-        } as RES)
-      }
-    )
-  }
-}
-
-export function send (response: Promise<RES>): void {
-  return pipe(response, JSON.stringify, doSend)
-}
-
-export function delay (): (
-  ma: TE.TaskEither<Error, REQ>
-) => TE.TaskEither<Error, REQ> {
-  return ma => () =>
-    new Promise(resolve => {
-      setTimeout(() => {
-        ma().then(resolve)
-      }, (Math.floor(Math.random() * 30) + 1) * 20)
-    })
-}
-
 export const lookup = flow(
   (request:REQ) =>  ({request, key:`client:Response:${request.hash}`}),
   ({request, key}) => ({request, key, cache:read(key)}),
@@ -109,6 +82,37 @@ export function check(args:{request:REQ, key:string, cache:Promise<unknown>}):TE
     })
   }
 
+export function query(schema:GraphQLSchema, root:unknown) {
+  return async (request: REQ): Promise<RES> => {
+    return pipe(
+      await _graphql(schema, request.query, root),
+      async (result: ExecutionResult) => {
+        return ({
+          uri: 'response',
+          hash: request.hash,
+          data: result.data,
+          //signature: sign(Stablelib.decode(request.hash), (await secret())['secretKey'])
+        } as RES)
+      }
+    )
+  }
+}
+
+export async function send (response: Promise<RES>): Promise<void> {
+  return pipe(await response, JSON.stringify, doSend)
+}
+
+export function delay (): (
+  ma: TE.TaskEither<Error, REQ>
+) => TE.TaskEither<Error, REQ> {
+  return ma => () =>
+    new Promise(resolve => {
+      setTimeout(() => {
+        ma().then(resolve)
+      }, (Math.floor(Math.random() * 30) + 1) * 20)
+    })
+}
+
 export const request = (schema:GraphQLSchema, root:unknown) => flow(
   decode(Request),
   TE.fromEither,
@@ -116,5 +120,5 @@ export const request = (schema:GraphQLSchema, root:unknown) => flow(
   TE.map(lookup),
   TE.chain(check),
   TE.chain<Error, REQ, Promise<RES>>(flow(query(schema, root), TE.right)),
-  TE.chain<Error, Promise<RES>, void>(flow(send, TE.right))
+  TE.chain<Error, Promise<RES>, Promise<void>>(flow(send, TE.right))
 )

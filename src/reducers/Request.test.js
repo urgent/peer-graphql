@@ -2,7 +2,7 @@ import * as fc from 'fast-check';
 import { graphql as _graphql } from 'graphql'
 import { schema, root } from '../graphql/resolve'
 import { query, request } from './Request'
-
+import { socket } from '../websocket'
 // need to setup state management
 // event emitter in Request for state mutations
 import { environment } from '../RelayEnvironment'
@@ -57,8 +57,25 @@ test('let query to give the same data as graphql ', (done) => {
     )
 })
 
-test('response query works ', async (done) => {
+test('request query works ', async (done) => {
     const query = await _graphql(schema, `query ResponseQuery {response{hash,time}}`, root);
     expect(query.data).toMatchObject({ response: [{ hash: '123', time: '1234' }] })
     done()
+})
+
+export const socketListen = new WebSocket(
+    'wss://connect.websocket.in/v3/1?apiKey=4sC6D9hsMYg5zcl15Y94nXNz8KAxr8eezGglKE9FkhRLnHcokuKsgCCQKZcW'
+)
+
+test('request works ', async (done) => {
+    jest.setTimeout(10000)
+    const response = request(schema, `query ResponseQuery {response{hash,time}}`, root)({ uri: 'request', hash: '123', query: `query AppHelloQuery {hello}` })
+    expect(typeof response).toEqual('function')
+    // 1. listen to events, make sure they receive
+    // 2. Relay doing something on second call, need units for relay() function
+    socketListen.onmessage = (evt) => {
+        console.log(evt.data);
+        done()
+    }
+    await response();
 })

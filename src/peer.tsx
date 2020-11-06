@@ -18,7 +18,7 @@ interface Props {
  */
 export type Reduction = E.Either<
   Error,
-  [TaskEither<Error, void> | IOEither<Error, void>, Props]
+  [TaskEither<Error, Promise<void>> | IOEither<Error, void>, Props]
 >
 
 /**
