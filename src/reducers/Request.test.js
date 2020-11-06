@@ -7,6 +7,9 @@ import { socket } from '../websocket'
 // event emitter in Request for state mutations
 import { environment } from '../RelayEnvironment'
 
+// ignore messages returned from websocket
+
+socket.onmessage = () => { };
 
 const payload = {
     uri: fc.constant("request"),
@@ -74,7 +77,7 @@ test('request works ', async (done) => {
     // 1. listen to events, make sure they receive
     // 2. Relay doing something on second call, need units for relay() function
     socketListen.onmessage = (evt) => {
-        console.log(evt.data);
+        expect(JSON.parse(evt.data)).toEqual({ "uri": "response", "hash": "123", "data": { "hello": null } });
         done()
     }
     await response();

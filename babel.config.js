@@ -4,5 +4,7 @@ module.exports = {
         ['@babel/preset-env', { targets: { node: 'current' } }],
         '@babel/preset-typescript',
     ],
-    plugins: ["relay"]
+    plugins: ["relay"],
+    sourceMaps: true,
+    inputSourceMap: true,
 };

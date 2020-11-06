@@ -117,6 +117,7 @@ export const request = (schema:GraphQLSchema, root:unknown) => flow(
   decode(Request),
   TE.fromEither,
   TE.mapLeft(err => new Error(String(err))),
+  
   TE.map(lookup),
   TE.chain(check),
   TE.chain<Error, REQ, Promise<RES>>(flow(query(schema, root), TE.right)),
