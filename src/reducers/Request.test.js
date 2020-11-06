@@ -71,13 +71,13 @@ export const socketListen = new WebSocket(
 )
 
 test('request works ', async (done) => {
-    jest.setTimeout(10000)
-    const response = request(schema, `query ResponseQuery {response{hash,time}}`, root)({ uri: 'request', hash: '123', query: `query AppHelloQuery {hello}` })
+    jest.setTimeout(30000)
+    const response = request(schema, `query ResponseQuery {response{hash,time}}`, root)({ uri: 'request', hash: '123456', query: `query AppHelloQuery {hello}` })
     expect(typeof response).toEqual('function')
     // 1. listen to events, make sure they receive
     // 2. Relay doing something on second call, need units for relay() function
     socketListen.onmessage = (evt) => {
-        expect(JSON.parse(evt.data)).toEqual({ "uri": "response", "hash": "123", "data": { "hello": null } });
+        expect(JSON.parse(evt.data)['data']).toEqual({ "hello": null });
         done()
     }
     await response();

@@ -91,7 +91,7 @@ export function query(schema:GraphQLSchema, root:unknown) {
           uri: 'response',
           hash: request.hash,
           data: result.data,
-          //signature: sign(Stablelib.decode(request.hash), (await secret())['secretKey'])
+          signature: sign(Stablelib.decode(request.hash), (await secret())['secretKey'])
         } as RES)
       }
     )
