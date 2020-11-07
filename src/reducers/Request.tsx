@@ -20,7 +20,9 @@ const Header = t.type({
 })
 
 const Body = t.partial({
-  variables: t.record(t.string, t.string)
+  variables: t.record(t.string, t.string),
+  key: t.string,
+  cache: t.string
 })
 
 const Request = t.intersection([Header, Body])
@@ -64,19 +66,18 @@ export async function secret (): Promise<SignKeyPair> {
   }
 }
 
-export const lookup = flow(
-  (request:REQ) =>  ({request, key:`client:Response:${request.hash}`}),
-  ({request, key}) => ({request, key, cache:read(key)}),
-)
+export function lookup(request:REQ):[REQ, Promise<unknown>] { 
+  return [request, read(`client:Response:${request.hash}`)]
+}
 
-export function check(args:{request:REQ, key:string, cache:Promise<unknown>}):TE.TaskEither<Error, REQ> {
+export function check([request, cache]:[REQ, Promise<unknown>]):TE.TaskEither<Error, REQ> {
     return () => new Promise( (resolve) => {
-      args.cache.then((result) => {
+      cache.then((result) => {
         if(result) {
-          del(args.key);
+          del(`client:Response:${request.hash}`);
           resolve(E.left(new Error('Request already fulfilled')));
         } else {
-          resolve(E.right(args.request))
+          resolve(E.right(request))
         }
       })
     })
@@ -116,8 +117,7 @@ export function delay (): (
 export const request = (schema:GraphQLSchema, root:unknown) => flow(
   decode(Request),
   TE.fromEither,
-  TE.mapLeft(err => new Error(String(err))),
-  
+  delay(),
   TE.map(lookup),
   TE.chain(check),
   TE.chain<Error, REQ, Promise<RES>>(flow(query(schema, root), TE.right)),

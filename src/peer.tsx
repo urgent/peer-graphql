@@ -62,7 +62,7 @@ export const relay = (schema:GraphQLSchema, root:unknown) => flow(
  * @param {unknown} i payload to decode
  * @return {E.Either<Error, A>} decode results, Error or type
  */
-export function decode<A> (codec: t.Decoder<unknown, A>) {
+export function decode<A> (codec: t.Decoder<unknown, A>):(a: unknown) => E.Either<Error, A> {
   return flow(
     codec.decode,
     E.mapLeft(err => new Error(failure(err).join('\n')))
