@@ -24,24 +24,26 @@ const ResponseQuery = graphql`
   }
 `
 
-export async function cache (request: RES): Promise<RES> {
+export async function cache (request: RES): Promise<RES> {  
   if(!(await read(`client:Response:${request.hash}`))) {
     write({
       key:`client:Response:${request.hash}`, 
       type:'Response', 
-      query: ResponseQuery
+      query: ResponseQuery,
+      variables:{hash:request.hash}
     })
   }
   return request
 }
 
 function emit (eventEmitter: EventEmitter) {
-  return async (response: Promise<RES>) =>
+  return async (response: Promise<RES>) =>{
     eventEmitter.emit((await response).hash, { data: (await response).data })
+  }
 }
 
 export const response = flow(
-  decode(Response),
+  decode(Response),  
   IOE.fromEither,
   IOE.chain<Error, RES, Promise<RES>>(flow(cache, IOE.right)),
   IOE.map<Promise<RES>, void>(emit(eventEmitter))
