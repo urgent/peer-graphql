@@ -1,6 +1,6 @@
 import * as fc from 'fast-check';
 import { graphql as _graphql } from 'graphql'
-import { schema, root } from '../graphql/resolve'
+import { schema, root } from '../graphql/root'
 import { query, request } from './Request'
 import { socket } from '../websocket'
 // need to setup state management

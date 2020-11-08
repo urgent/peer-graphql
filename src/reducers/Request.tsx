@@ -38,6 +38,17 @@ const KeyQuery = graphql`
   }
 `
 
+export function delay (): (
+  ma: TE.TaskEither<Error, REQ>
+) => TE.TaskEither<Error, REQ> {
+  return ma => () =>
+    new Promise(resolve => {
+      setTimeout(() => {
+        ma().then(resolve)
+      }, (Math.floor(Math.random() * 30) + 1) * 20)
+    })
+}
+
 export async function secret (): Promise<SignKeyPair> {
   const data = await read(`client:Sign.KeyPair`) as { pair: string }
   if (data) {
@@ -101,17 +112,6 @@ export function query(schema:GraphQLSchema, root:unknown) {
 
 export async function send (response: Promise<RES>): Promise<void> {
   return pipe(await response, JSON.stringify, doSend)
-}
-
-export function delay (): (
-  ma: TE.TaskEither<Error, REQ>
-) => TE.TaskEither<Error, REQ> {
-  return ma => () =>
-    new Promise(resolve => {
-      setTimeout(() => {
-        ma().then(resolve)
-      }, (Math.floor(Math.random() * 30) + 1) * 20)
-    })
 }
 
 export const request = (schema:GraphQLSchema, root:unknown) => flow(

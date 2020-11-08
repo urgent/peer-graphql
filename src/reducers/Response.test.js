@@ -1,5 +1,4 @@
 import { graphql as _graphql } from 'graphql'
-import { schema, root } from '../graphql/resolve'
 import { response } from './Response'
 import { eventEmitter } from '../eventEmitter'
 import { socket } from '../websocket'

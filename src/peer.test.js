@@ -2,7 +2,7 @@ import * as fc from 'fast-check';
 import * as E from 'fp-ts/lib/Either'
 import { pipe, identity } from 'fp-ts/lib/function'
 import { reduce } from './peer'
-import { schema, root } from './graphql/resolve'
+import { schema, root } from './graphql/root'
 
 function reverse(s) {
     return [...s].reverse().join("");
