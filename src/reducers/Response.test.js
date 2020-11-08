@@ -19,7 +19,6 @@ const payload = {
 }
 
 test('response works ', async (done) => {
-
     eventEmitter.once(hash, data => {
         expect(data).toEqual({ data: { hello: 'world' } });
         done()
