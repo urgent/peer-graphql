@@ -4,12 +4,12 @@ import { failure } from 'io-ts/lib/PathReporter'
 import { flow, pipe } from 'fp-ts/lib/function'
 import { TaskEither } from 'fp-ts/lib/TaskEither'
 import { IOEither } from 'fp-ts/lib/IOEither'
-import { request } from  './reducers/Request'
-import { response } from './reducers/Response'
+import { resolve } from  './reducers/Resolve'
+import { mutate } from './reducers/Mutate'
 import {GraphQLSchema} from 'graphql'
 
 interface Props {
-    uri: 'request' | 'response'
+    uri: 'resolve' | 'mutate'
     delay: number
   }
 
@@ -37,11 +37,11 @@ export const reduce = (schema:GraphQLSchema, root:unknown) => (evt: MessageEvent
     ),
     E.map((props: Props) => {
       switch (props.uri) {
-          case 'request':
-              return [request(schema, root)(props), props];
+          case 'resolve':
+              return [resolve(schema, root)(props), props];
               
-          case 'response':
-              return [response(props), props];
+          case 'mutate':
+              return [mutate(props), props];
       }
     })
   )

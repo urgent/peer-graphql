@@ -1,28 +1,27 @@
 import * as fc from 'fast-check';
 import { graphql as _graphql } from 'graphql'
 import { schema, root } from '../graphql/root'
-import { query, request } from './Request'
+import { query, resolve } from './Resolve'
 import { socket } from '../websocket'
 // need to setup state management
-// event emitter in Request for state mutations
+// event emitter for state mutations
 import { environment } from '../RelayEnvironment'
 
 // ignore messages returned from websocket
-
 socket.onmessage = () => { };
 
 const payload = {
-    uri: fc.constant("request"),
+    uri: fc.constant("resolve"),
     hash: fc.hexaString(40, 40),
     query: fc.constant(`query AppHelloQuery {hello}`),
     variables: fc.constant({})
 };
 
-test('let query give a response uri', (done) => {
+test('let query give a resolve uri', (done) => {
     fc.assert(
         fc.asyncProperty(fc.record(payload), async (a) => {
             const query1 = await query(schema, root)(a)
-            expect(query1.uri).toBe("response")
+            expect(query1.uri).toBe("mutate")
             done()
         })
     )
@@ -70,15 +69,15 @@ export const socketListen = new WebSocket(
     'wss://connect.websocket.in/v3/1?apiKey=4sC6D9hsMYg5zcl15Y94nXNz8KAxr8eezGglKE9FkhRLnHcokuKsgCCQKZcW'
 )
 
-test('request works ', async (done) => {
+test('resolve works ', async (done) => {
     jest.setTimeout(30000)
-    const response = request(schema, `query ResponseQuery {response{hash,time}}`, root)({ uri: 'request', hash: '123456', query: `query AppHelloQuery {hello}` })
-    expect(typeof response).toEqual('function')
+    const resolution = resolve(schema, `query ResponseQuery {response{hash,time}}`, root)({ uri: 'resolve', hash: '123456', query: `query AppHelloQuery {hello}` })
+    expect(typeof resolution).toEqual('function')
     // 1. listen to events, make sure they receive
     // 2. Relay doing something on second call, need units for relay() function
     socketListen.onmessage = (evt) => {
         expect(JSON.parse(evt.data)['data']).toEqual({ "hello": null });
         done()
     }
-    await response();
+    await resolution();
 })

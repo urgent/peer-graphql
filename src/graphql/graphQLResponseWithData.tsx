@@ -57,9 +57,9 @@ export const runtime = async ([result]: [Promise<unknown>, void]) =>
   )
 
 /**
- * GraphQL operation to WebSocket request
+ * GraphQL operation to WebSocket message
  * @param {any, any} fetch {operation, variables} to format
- * @return {} WebSocket request from graphql operation
+ * @return {} WebSocket message from graphql operation
  */
 export const format = ({
   operation,
@@ -68,7 +68,7 @@ export const format = ({
   operation: { text: string }
   variables: any
 }) => (hash: string) => ({
-  uri: 'request',
+  uri: 'resolve',
   query: operation.text,
   hash,
   variables

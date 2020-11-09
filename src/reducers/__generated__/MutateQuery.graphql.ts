@@ -3,24 +3,24 @@
 // @ts-nocheck
 
 import { ConcreteRequest } from "relay-runtime";
-export type ResponseQueryVariables = {
+export type MutateQueryVariables = {
     hash?: string | null;
 };
-export type ResponseQueryResponse = {
+export type MutateQueryResponse = {
     readonly response: ReadonlyArray<{
         readonly hash: string | null;
         readonly time: unknown | null;
     } | null> | null;
 };
-export type ResponseQuery = {
-    readonly response: ResponseQueryResponse;
-    readonly variables: ResponseQueryVariables;
+export type MutateQuery = {
+    readonly response: MutateQueryResponse;
+    readonly variables: MutateQueryVariables;
 };
 
 
 
 /*
-query ResponseQuery(
+query MutateQuery(
   $hash: String
 ) {
   response(hash: $hash) {
@@ -76,7 +76,7 @@ return {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Fragment",
     "metadata": null,
-    "name": "ResponseQuery",
+    "name": "MutateQuery",
     "selections": (v1/*: any*/),
     "type": "Query",
     "abstractKey": null
@@ -85,18 +85,18 @@ return {
   "operation": {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Operation",
-    "name": "ResponseQuery",
+    "name": "MutateQuery",
     "selections": (v1/*: any*/)
   },
   "params": {
-    "cacheID": "15d653bce579b268c6e27cbc9a34b798",
+    "cacheID": "da6393e2089316e3806f418a5dcb3cbd",
     "id": null,
     "metadata": {},
-    "name": "ResponseQuery",
+    "name": "MutateQuery",
     "operationKind": "query",
-    "text": "query ResponseQuery(\n  $hash: String\n) {\n  response(hash: $hash) {\n    hash\n    time\n  }\n}\n"
+    "text": "query MutateQuery(\n  $hash: String\n) {\n  response(hash: $hash) {\n    hash\n    time\n  }\n}\n"
   }
 };
 })();
-(node as any).hash = 'c1a0c7658665873ea89b2fb7aebd62df';
+(node as any).hash = 'dcb8621709d99fd49328f32923b3d286';
 export default node;

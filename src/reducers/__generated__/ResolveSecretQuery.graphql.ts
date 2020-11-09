@@ -3,24 +3,24 @@
 // @ts-nocheck
 
 import { ConcreteRequest } from "relay-runtime";
-export type RequestSecretQueryVariables = {
+export type ResolveSecretQueryVariables = {
     hash?: string | null;
 };
-export type RequestSecretQueryResponse = {
+export type ResolveSecretQueryResponse = {
     readonly response: ReadonlyArray<{
         readonly hash: string | null;
         readonly time: unknown | null;
     } | null> | null;
 };
-export type RequestSecretQuery = {
-    readonly response: RequestSecretQueryResponse;
-    readonly variables: RequestSecretQueryVariables;
+export type ResolveSecretQuery = {
+    readonly response: ResolveSecretQueryResponse;
+    readonly variables: ResolveSecretQueryVariables;
 };
 
 
 
 /*
-query RequestSecretQuery(
+query ResolveSecretQuery(
   $hash: String
 ) {
   response(hash: $hash) {
@@ -76,7 +76,7 @@ return {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Fragment",
     "metadata": null,
-    "name": "RequestSecretQuery",
+    "name": "ResolveSecretQuery",
     "selections": (v1/*: any*/),
     "type": "Query",
     "abstractKey": null
@@ -85,18 +85,18 @@ return {
   "operation": {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Operation",
-    "name": "RequestSecretQuery",
+    "name": "ResolveSecretQuery",
     "selections": (v1/*: any*/)
   },
   "params": {
-    "cacheID": "b4e33299df6f54b7caa509d609382869",
+    "cacheID": "154ffdf539021e1752cc72ad7d38380a",
     "id": null,
     "metadata": {},
-    "name": "RequestSecretQuery",
+    "name": "ResolveSecretQuery",
     "operationKind": "query",
-    "text": "query RequestSecretQuery(\n  $hash: String\n) {\n  response(hash: $hash) {\n    hash\n    time\n  }\n}\n"
+    "text": "query ResolveSecretQuery(\n  $hash: String\n) {\n  response(hash: $hash) {\n    hash\n    time\n  }\n}\n"
   }
 };
 })();
-(node as any).hash = '0bc86d39ac1aade2c7093f503a41002b';
+(node as any).hash = '98bafcc6251504d5fe068d351fa1b243';
 export default node;

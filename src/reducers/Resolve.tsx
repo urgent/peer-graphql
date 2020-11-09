@@ -5,7 +5,7 @@ import { pipe, flow } from 'fp-ts/lib/function'
 import * as t from 'io-ts'
 import { decode } from '../peer'
 import { doSend } from '../websocket'
-import { RES } from './Response'
+import { Mutation } from './Mutate'
 import { sign, SignKeyPair } from 'tweetnacl'
 import {GraphQLSchema} from 'graphql'
 import * as Stablelib from '@stablelib/base64'
@@ -14,7 +14,7 @@ import graphql from 'babel-plugin-relay/macro'
 
 // define types for decode
 const Header = t.type({
-  uri: t.literal('request'),
+  uri: t.literal('resolve'),
   hash: t.string,
   query: t.string,
 })
@@ -25,12 +25,12 @@ const Body = t.partial({
   cache: t.string
 })
 
-const Request = t.intersection([Header, Body])
+const Resolution = t.intersection([Header, Body])
 
-export type REQ = t.TypeOf<typeof Request>
+export type Resolution = t.TypeOf<typeof Resolution>
 
 const KeyQuery = graphql`
-  query RequestSecretQuery($hash: String) {
+  query ResolveSecretQuery($hash: String) {
     response(hash: $hash) {
       hash
       time
@@ -39,8 +39,8 @@ const KeyQuery = graphql`
 `
 
 export function delay (): (
-  ma: TE.TaskEither<Error, REQ>
-) => TE.TaskEither<Error, REQ> {
+  ma: TE.TaskEither<Error, Resolution>
+) => TE.TaskEither<Error, Resolution> {
   return ma => () =>
     new Promise(resolve => {
       setTimeout(() => {
@@ -77,49 +77,49 @@ export async function secret (): Promise<SignKeyPair> {
   }
 }
 
-export function lookup(request:REQ):[REQ, Promise<unknown>] { 
-  return [request, read(`client:Response:${request.hash}`)]
+export function lookup(resolution:Resolution):[Resolution, Promise<unknown>] { 
+  return [resolution, read(`client:Response:${resolution.hash}`)]
 }
 
-export function check([request, cache]:[REQ, Promise<unknown>]):TE.TaskEither<Error, REQ> {
-    return () => new Promise( (resolve) => {
+export function check([resolve, cache]:[Resolution, Promise<unknown>]):TE.TaskEither<Error, Resolution> {
+    return () => new Promise( (_resolve) => {
       cache.then((result) => {
         if(result) {
-          del(`client:Response:${request.hash}`);
-          resolve(E.left(new Error('Request already fulfilled')));
+          del(`client:Response:${resolve.hash}`);
+          _resolve(E.left(new Error('Message already resolved')));
         } else {
-          resolve(E.right(request))
+          _resolve(E.right(resolve))
         }
       })
     })
   }
 
 export function query(schema:GraphQLSchema, root:unknown) {
-  return async (request: REQ): Promise<RES> => {
+  return async (resolve: Resolution): Promise<Mutation> => {
     return pipe(
-      await _graphql(schema, request.query, root),
+      await _graphql(schema, resolve.query, root),
       async (result: ExecutionResult) => {
         return ({
-          uri: 'response',
-          hash: request.hash,
+          uri: 'mutate',
+          hash: resolve.hash,
           data: result.data,
-          signature: sign(Stablelib.decode(request.hash), (await secret())['secretKey'])
-        } as RES)
+          signature: sign(Stablelib.decode(resolve.hash), (await secret())['secretKey'])
+        } as Mutation)
       }
     )
   }
 }
 
-export async function send (response: Promise<RES>): Promise<void> {
+export async function send (response: Promise<Mutation>): Promise<void> {
   return pipe(await response, JSON.stringify, doSend)
 }
 
-export const request = (schema:GraphQLSchema, root:unknown) => flow(
-  decode(Request),
+export const resolve = (schema:GraphQLSchema, root:unknown) => flow(
+  decode(Resolution),
   TE.fromEither,
   delay(),
   TE.map(lookup),
   TE.chain(check),
-  TE.chain<Error, REQ, Promise<RES>>(flow(query(schema, root), TE.right)),
-  TE.chain<Error, Promise<RES>, Promise<void>>(flow(send, TE.right))
+  TE.chain<Error, Resolution, Promise<Mutation>>(flow(query(schema, root), TE.right)),
+  TE.chain<Error, Promise<Mutation>, Promise<void>>(flow(send, TE.right))
 )

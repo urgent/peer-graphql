@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tsc",
     "build:check": "tsc --noEmit",
-    "test": "tsc && yarn run jest -- --watch --detectOpenHandles",
+    "test": "yarn run build && yarn run relay && yarn run jest -- --watch --detectOpenHandles",
     "relay": "relay-compiler --src ./src --schema ./src/graphql/schema.graphql --language typescript --extensions js jsx tsx"
   },
   "files": ["lib"],
