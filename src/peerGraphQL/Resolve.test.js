@@ -7,9 +7,6 @@ import { socket } from '../websocket'
 // event emitter for state mutations
 import { environment } from '../RelayEnvironment'
 
-// ignore messages returned from websocket
-socket.onmessage = () => { };
-
 const payload = {
     uri: fc.constant("resolve"),
     hash: fc.hexaString(40, 40),

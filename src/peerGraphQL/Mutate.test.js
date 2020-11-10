@@ -9,9 +9,6 @@ import { socket } from '../websocket'
 // event emitter in Request for state mutations
 import { environment } from '../RelayEnvironment'
 
-// ignore messages returned from websocket
-socket.onmessage = () => { };
-
 const hash = '12345';
 
 const payload = {

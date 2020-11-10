@@ -2,9 +2,12 @@ import { commitLocalUpdate } from 'react-relay'
 import { createOperationDescriptor, getRequest, GraphQLTaggedNode, Environment } from 'relay-runtime'
 import { eventEmitter } from './eventEmitter'
 
-// the only reason events are used is commitLocalUpdate requires the RelayEnvironment
-// peerGraphQL is used to build the RelayEnvironment
-// so peerGraphQL is passed to environment, then environment is passed here to init local state management
+/* ****************************************************************************************************
+  the only reason events are used is commitLocalUpdate requires the RelayEnvironment
+  peerGraphQL is used to build the RelayEnvironment
+  so peerGraphQL is passed to environment, then environment is passed here to init local state management
+   ****************************************************************************************************
+*/
 
 /**
  * Initialize local state management with Relay environment
