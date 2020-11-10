@@ -9,7 +9,7 @@ export const root = {
   hello: () => {
     return 'world'
   },
-  response: (args: unknown) => {
+  resolution: (args: unknown) => {
     return [
       {
         hash: '123',

@@ -57,7 +57,7 @@ test('let relay then reverse hash be the same as reverse hash then relay', () =>
     );
 });
 
-test('let state returned from relay({uri:"response"}) be the same as deserialized input', () => {
+test('let state returned from relay({uri:"mutate"}) be the same as deserialized input', () => {
     fc.assert(
         fc.property(
             fc.record(mutation), (a) => {

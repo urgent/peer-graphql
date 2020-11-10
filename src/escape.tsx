@@ -55,7 +55,7 @@ export const escapeSocket = async ([result]: [Promise<unknown>, void]) =>
       }),
       identity
     ),
-    // cast WebSocket response to GraphQLResponse, as safely as possible because of runtime decode
+    // cast WebSocket message to GraphQLResponse, as safely as possible because of runtime decode
     (runtime: RUN) => runtime as GraphQLResponseWithData
   )
 

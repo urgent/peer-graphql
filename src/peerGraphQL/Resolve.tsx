@@ -31,7 +31,7 @@ export type Resolution = t.TypeOf<typeof Resolution>
 
 const KeyQuery = graphql`
   query ResolveSecretQuery($hash: String) {
-    response(hash: $hash) {
+    resolution(hash: $hash) {
       hash
       time
     }
@@ -78,14 +78,14 @@ export async function secret (): Promise<SignKeyPair> {
 }
 
 export function lookup(resolution:Resolution):[Resolution, Promise<unknown>] { 
-  return [resolution, read(`client:Response:${resolution.hash}`)]
+  return [resolution, read(`client:Resolution:${resolution.hash}`)]
 }
 
 export function check([resolve, cache]:[Resolution, Promise<unknown>]):TE.TaskEither<Error, Resolution> {
     return () => new Promise( (_resolve) => {
       cache.then((result) => {
         if(result) {
-          del(`client:Response:${resolve.hash}`);
+          del(`client:Resolution:${resolve.hash}`);
           _resolve(E.left(new Error('Message already resolved')));
         } else {
           _resolve(E.right(resolve))
@@ -110,8 +110,8 @@ export function query(schema:GraphQLSchema, root:unknown) {
   }
 }
 
-export async function send (response: Promise<Mutation>): Promise<void> {
-  return pipe(await response, JSON.stringify, doSend)
+export async function send (resolution: Promise<Mutation>): Promise<void> {
+  return pipe(await resolution, JSON.stringify, doSend)
 }
 
 export const resolve = (schema:GraphQLSchema, root:unknown) => flow(

@@ -59,9 +59,9 @@ test('let query to give the same data as graphql ', (done) => {
     )
 })
 
-test('request query works ', async (done) => {
-    const query = await _graphql(schema, `query ResponseQuery {response{hash,time}}`, root);
-    expect(query.data).toMatchObject({ response: [{ hash: '123', time: '1234' }] })
+test('resolution query works ', async (done) => {
+    const query = await _graphql(schema, `query ResolutionQuery {resolution{hash,time}}`, root);
+    expect(query.data).toMatchObject({ resolution: [{ hash: '123', time: '1234' }] })
     done()
 })
 
@@ -71,7 +71,7 @@ export const socketListen = new WebSocket(
 
 test('resolve works ', async (done) => {
     jest.setTimeout(30000)
-    const resolution = resolve(schema, `query ResponseQuery {response{hash,time}}`, root)({ uri: 'resolve', hash: '123456', query: `query AppHelloQuery {hello}` })
+    const resolution = resolve(schema, `query ResolutionQuery {resolution{hash,time}}`, root)({ uri: 'resolve', hash: '123456', query: `query AppHelloQuery {hello}` })
     expect(typeof resolution).toEqual('function')
     // 1. listen to events, make sure they receive
     // 2. Relay doing something on second call, need units for relay() function

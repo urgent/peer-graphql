@@ -17,10 +17,10 @@ type FetchFn = (operation: any, variables: any) => Promise<GraphQLResponseWithDa
  * 
  * @param eventEmitter 
  */
-const respond = (eventEmitter: EventEmitter) => (hash: string) =>
+const listen = (eventEmitter: EventEmitter) => (hash: string) =>
   new Promise((resolve, reject) => {
     eventEmitter.once(hash, data => {
-      del(`client:Response:${hash}`)
+      del(`client:Resolution:${hash}`)
       resolve(data)
     })
     setTimeout(() => {
@@ -29,11 +29,9 @@ const respond = (eventEmitter: EventEmitter) => (hash: string) =>
     }, 3000)
   })
 
-const _respond = respond(eventEmitter)
-
 /**
  * Entry point to be used in Relay networking. 
- * Send GraphQL queries to WebSocket, listen to response and return.
+ * Send GraphQL queries to WebSocket, listen for resolution, and return.
  * Listen on WebSocket for GraphQL queries, resolve, and send.
  * 
  * @param {GraphQLSchema} schema GraphQL schema for resolving queries
@@ -48,8 +46,8 @@ export function fetchPeer(schema:GraphQLSchema, root:unknown):FetchFn  {
       await digestMessage(operation.text),
       // use hash as input for both send and _respond
       fanout({ ...R.Strong, ...R.Category })(
-        // listen for response
-        _respond,
+        // listen for websocket resolution
+        listen(eventEmitter),
         // send to websocket
         flow(
           // format message

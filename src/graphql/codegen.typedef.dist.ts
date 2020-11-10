@@ -4,7 +4,7 @@ type Keypair {
   pair: String
 }
 
-type Response {
+type Resolution {
   hash: String
   time: DateTime
 }
@@ -12,6 +12,6 @@ type Response {
 type Query {
   hello: String
   goodbye: String
-  response(hash: String): [Response]
+  resolution(hash: String): [Resolution]
 }
 `

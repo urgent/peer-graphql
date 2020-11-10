@@ -17,7 +17,7 @@ export type Mutation = t.TypeOf<typeof Mutation>
 
 const MutateQuery = graphql`
   query MutateQuery($hash: String) {
-    response(hash: $hash) {
+    resolution(hash: $hash) {
       hash
       time
     }
@@ -25,10 +25,10 @@ const MutateQuery = graphql`
 `
 
 export async function cache (mutation: Mutation): Promise<Mutation> {  
-  if(!(await read(`client:Response:${mutation.hash}`))) {
+  if(!(await read(`client:Resolution:${mutation.hash}`))) {
     write({
-      key:`client:Response:${mutation.hash}`, 
-      type:'Response', 
+      key:`client:Resolution:${mutation.hash}`, 
+      type:'Resolution', 
       query: MutateQuery,
       variables:{hash:mutation.hash}
     })
