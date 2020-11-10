@@ -4,29 +4,31 @@ import { failure } from 'io-ts/lib/PathReporter'
 import { flow, pipe } from 'fp-ts/lib/function'
 import { TaskEither } from 'fp-ts/lib/TaskEither'
 import { IOEither } from 'fp-ts/lib/IOEither'
-import { resolve } from  './reducers/Resolve'
-import { mutate } from './reducers/Mutate'
+import { resolve } from  './peerGraphQL/Resolve'
+import { mutate } from './peerGraphQL/Mutate'
 import {GraphQLSchema} from 'graphql'
 
+/**
+ * Minimum properties of WebSocket message to invoke a command
+ */
 interface Props {
-    uri: 'resolve' | 'mutate'
-    delay: number
-  }
+  uri: 'resolve' | 'mutate'
+}
 
 /**
- * Enforces return value from reducer to be callable
+ * Result of command invoked by WebSocket
  */
-export type Reduction = E.Either<
+export type Effect = E.Either<
   Error,
   [TaskEither<Error, Promise<void>> | IOEither<Error, void>, Props]
 >
 
 /**
- * Respond to WebSocket payload with applicable reducer
+ * Use WebSocket to invoke commands
  * @param {MessageEvent} evt WebSocket payload
- * @return {Reduction} Error or task of reducer
+ * @return {Effect} Error or side effects
  */
-export const reduce = (schema:GraphQLSchema, root:unknown) => (evt: MessageEvent): Reduction =>
+export const call = (schema:GraphQLSchema, root:unknown) => (evt: MessageEvent): Effect =>
   pipe(
     E.parseJSON(evt.data, E.toError),
     E.mapLeft(err => {
@@ -47,14 +49,18 @@ export const reduce = (schema:GraphQLSchema, root:unknown) => (evt: MessageEvent
   )
 
 /**
- * Run side-effects returned by reducer
+ * Parse and decode WebSocket message, call command, and perform side effects.
  * @param {MessageEvent} evt WebSocket payload
- * @return {Reduction} Error or results of reducer call
+ * @return {Either<Error, void>} Side effect evaluation results
  */
-export const relay = (schema:GraphQLSchema, root:unknown) => flow(
-  reduce(schema,root),
-  E.map(([reduction]) => reduction())
+export const peerGraphql = (schema:GraphQLSchema, root:unknown) => flow(
+  call(schema,root),
+  E.map(([effect]) => effect())
 )
+
+
+// ---------- Commonly used functions ----------
+
 
 /**
  * Run codec on unknown value and make errors printable

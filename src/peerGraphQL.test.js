@@ -1,7 +1,7 @@
 import * as fc from 'fast-check';
 import * as E from 'fp-ts/lib/Either'
 import { pipe, identity } from 'fp-ts/lib/function'
-import { reduce } from './peer'
+import { call } from './peerGraphQL'
 import { schema, root } from './graphql/root'
 
 // simple reverse function, for property based testing
@@ -9,7 +9,8 @@ function reverse(s) {
     return [...s].reverse().join("");
 }
 
-// 
+// Websocket message
+// Asks peers to resolve a query
 const resolution = {
     uri: fc.constant("resolve"),
     hash: fc.hexaString(40, 40),
@@ -17,14 +18,17 @@ const resolution = {
     variables: fc.constant({})
 };
 
+// Websocket message
+// Answer resolve with mutate
 const mutation = {
     uri: fc.constant("mutate"),
     hash: fc.hexaString(40, 40),
     data: fc.constant({ hello: 'world' }),
 }
 
+// Run
 const fold = (func) => (a) => pipe(
-    reduce(schema, root)({ data: JSON.stringify(a) }),
+    call(schema, root)({ data: JSON.stringify(a) }),
     E.fold(
         identity,
         func

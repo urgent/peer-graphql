@@ -4,13 +4,19 @@ import { fanout } from 'fp-ts/lib/Strong'
 import { pipe, flow } from 'fp-ts/lib/function'
 import { eventEmitter } from './eventEmitter'
 import { doSend, socket } from './websocket'
-import { digestMessage } from './peer'
+import { digestMessage } from './peerGraphQL'
 import { format, runtime, } from './graphql/graphQLResponseWithData'
 import {GraphQLSchema} from 'graphql'
 import { commitLocalUpdate } from 'react-relay'
-import { createOperationDescriptor, getRequest, GraphQLTaggedNode, Environment } from 'relay-runtime'
-import { relay } from './peer'
+import { createOperationDescriptor, getRequest, GraphQLTaggedNode, Environment, GraphQLResponseWithData } from 'relay-runtime'
+import { peerGraphql } from './peerGraphQL'
 
+type FetchFn = (operation: any, variables: any) => Promise<GraphQLResponseWithData>
+
+/**
+ * 
+ * @param eventEmitter 
+ */
 const respond = (eventEmitter: EventEmitter) => (hash: string) =>
   new Promise((resolve, reject) => {
     eventEmitter.once(hash, data => {
@@ -25,9 +31,18 @@ const respond = (eventEmitter: EventEmitter) => (hash: string) =>
 
 const _respond = respond(eventEmitter)
 
-export function fetchPeer(schema:GraphQLSchema, root:unknown) {
-  socket.onmessage = relay(schema,root)
-  return  async (operation: any, variables: any) => {
+/**
+ * Entry point to be used in Relay networking. 
+ * Send GraphQL queries to WebSocket, listen to response and return.
+ * Listen on WebSocket for GraphQL queries, resolve, and send.
+ * 
+ * @param {GraphQLSchema} schema GraphQL schema for resolving queries
+ * @param {unknown} root GraphQL schema resolvers
+ * @returns {(any, any) => FetchFn} fetchFn for RelayEnvironment Networking
+ */
+export function fetchPeer(schema:GraphQLSchema, root:unknown):FetchFn  {
+  socket.onmessage = peerGraphql(schema,root)
+  return async (operation, variables) => {
     return pipe(
       // hash graphql query for unique listener
       await digestMessage(operation.text),
