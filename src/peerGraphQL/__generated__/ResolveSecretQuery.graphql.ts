@@ -7,7 +7,7 @@ export type ResolveSecretQueryVariables = {
     hash?: string | null;
 };
 export type ResolveSecretQueryResponse = {
-    readonly response: ReadonlyArray<{
+    readonly resolution: ReadonlyArray<{
         readonly hash: string | null;
         readonly time: unknown | null;
     } | null> | null;
@@ -23,7 +23,7 @@ export type ResolveSecretQuery = {
 query ResolveSecretQuery(
   $hash: String
 ) {
-  response(hash: $hash) {
+  resolution(hash: $hash) {
     hash
     time
   }
@@ -48,9 +48,9 @@ v1 = [
         "variableName": "hash"
       }
     ],
-    "concreteType": "Response",
+    "concreteType": "Resolution",
     "kind": "LinkedField",
-    "name": "response",
+    "name": "resolution",
     "plural": true,
     "selections": [
       {
@@ -89,14 +89,14 @@ return {
     "selections": (v1/*: any*/)
   },
   "params": {
-    "cacheID": "154ffdf539021e1752cc72ad7d38380a",
+    "cacheID": "d541c424fdbccc641ed20b4b41d836bf",
     "id": null,
     "metadata": {},
     "name": "ResolveSecretQuery",
     "operationKind": "query",
-    "text": "query ResolveSecretQuery(\n  $hash: String\n) {\n  response(hash: $hash) {\n    hash\n    time\n  }\n}\n"
+    "text": "query ResolveSecretQuery(\n  $hash: String\n) {\n  resolution(hash: $hash) {\n    hash\n    time\n  }\n}\n"
   }
 };
 })();
-(node as any).hash = '98bafcc6251504d5fe068d351fa1b243';
+(node as any).hash = '72bdcd65c5881d8b0ba6ea5bbb9af67e';
 export default node;

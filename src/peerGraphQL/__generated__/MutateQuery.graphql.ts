@@ -7,7 +7,7 @@ export type MutateQueryVariables = {
     hash?: string | null;
 };
 export type MutateQueryResponse = {
-    readonly response: ReadonlyArray<{
+    readonly resolution: ReadonlyArray<{
         readonly hash: string | null;
         readonly time: unknown | null;
     } | null> | null;
@@ -23,7 +23,7 @@ export type MutateQuery = {
 query MutateQuery(
   $hash: String
 ) {
-  response(hash: $hash) {
+  resolution(hash: $hash) {
     hash
     time
   }
@@ -48,9 +48,9 @@ v1 = [
         "variableName": "hash"
       }
     ],
-    "concreteType": "Response",
+    "concreteType": "Resolution",
     "kind": "LinkedField",
-    "name": "response",
+    "name": "resolution",
     "plural": true,
     "selections": [
       {
@@ -89,14 +89,14 @@ return {
     "selections": (v1/*: any*/)
   },
   "params": {
-    "cacheID": "da6393e2089316e3806f418a5dcb3cbd",
+    "cacheID": "c93cbe2041a101002f27b250b7b3e6d6",
     "id": null,
     "metadata": {},
     "name": "MutateQuery",
     "operationKind": "query",
-    "text": "query MutateQuery(\n  $hash: String\n) {\n  response(hash: $hash) {\n    hash\n    time\n  }\n}\n"
+    "text": "query MutateQuery(\n  $hash: String\n) {\n  resolution(hash: $hash) {\n    hash\n    time\n  }\n}\n"
   }
 };
 })();
-(node as any).hash = 'dcb8621709d99fd49328f32923b3d286';
+(node as any).hash = '66bc37801473b109e543b636b3754b39';
 export default node;

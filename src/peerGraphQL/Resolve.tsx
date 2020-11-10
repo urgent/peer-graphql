@@ -9,7 +9,7 @@ import { Mutation } from './Mutate'
 import { sign, SignKeyPair } from 'tweetnacl'
 import {GraphQLSchema} from 'graphql'
 import * as Stablelib from '@stablelib/base64'
-import {del, read, write} from '../index'
+import {del, read, write} from '../cache'
 import graphql from 'babel-plugin-relay/macro'
 
 // define types for decode

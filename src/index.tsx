@@ -7,11 +7,13 @@ import { doSend, socket } from './websocket'
 import { digestMessage } from './peerGraphQL'
 import { escapeQL, escapeSocket, } from './escape'
 import {GraphQLSchema} from 'graphql'
-import { commitLocalUpdate } from 'react-relay'
-import { createOperationDescriptor, getRequest, GraphQLTaggedNode, Environment, GraphQLResponseWithData } from 'relay-runtime'
+import { GraphQLResponseWithData } from 'relay-runtime'
 import { peerGraphql } from './peerGraphQL'
+import { del, init } from './cache'
 
 type FetchFn = (operation: any, variables: any) => Promise<GraphQLResponseWithData>
+
+export const manage = init;
 
 /**
  * 
@@ -61,47 +63,4 @@ export function fetchPeer(schema:GraphQLSchema, root:unknown):FetchFn  {
       escapeSocket
     )
   }
-}
-
-export const read = (key:string) => new Promise((resolve, reject)=>{
-  eventEmitter.once(key, data => {
-    resolve(data)
-  })
-  eventEmitter.emit('state-read',{key});
-})
-
-export const write = (data: {key:string, type:string, query:GraphQLTaggedNode, variables?:unknown, value?: string, name?:string  }) => {
-  eventEmitter.emit('state-write',data)
-}
-
-export const del = (key:string) => {
-  eventEmitter.emit('state-delete',key)
-}
-
-export const manage = (environment:Environment) => {
-  eventEmitter.on('state-read', ({key}) => {
-    eventEmitter.emit(key,environment.getStore()
-    .getSource()
-    .get(key))
-  })
-
-  eventEmitter.on('state-write', ({key, type, value, name, query, variables}) => {
-    commitLocalUpdate(environment, store => {
-      const record = store.create(key, type)
-      record.setValue(
-        value,
-        name
-      )
-    })
-    // used for gc
-    const concreteRequest = getRequest(query)
-    const operation = createOperationDescriptor(concreteRequest, variables)
-    environment.retain(operation)
-  })
-
-  eventEmitter.on('state-delete', ({key}) => {
-    commitLocalUpdate(environment, store => {
-      store.delete(key)
-    })
-  })
 }
