@@ -1,16 +1,16 @@
-import { graphql as _graphql, ExecutionResult } from 'graphql'
+import { graphql as _graphql, ExecutionResult, GraphQLSchema } from 'graphql'
 import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
 import { pipe, flow } from 'fp-ts/lib/function'
 import * as t from 'io-ts'
+import { sign, SignKeyPair } from 'tweetnacl'
+import * as Stablelib from '@stablelib/base64'
+import graphql from 'babel-plugin-relay/macro'
 import { decode } from '../peerGraphQL'
 import { doSend } from '../websocket'
 import { Mutation } from './Mutate'
-import { sign, SignKeyPair } from 'tweetnacl'
-import {GraphQLSchema} from 'graphql'
-import * as Stablelib from '@stablelib/base64'
 import {del, read, write} from '../cache'
-import graphql from 'babel-plugin-relay/macro'
+
 
 // define types for decode
 const Header = t.type({
