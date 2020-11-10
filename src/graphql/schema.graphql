@@ -1,17 +1,15 @@
-scalar DateTime
+scalar PeerGraphQLDateTime
 
-type Keypair {
+type PeerGraphQLKeypair {
   pair: String
 }
 
 # Used for local state to resolve query only once among peers
-type Resolution {
+type PeerGraphQLResolution {
   hash: String
-  time: DateTime
+  time: PeerGraphQLDateTime
 }
 
-type Query {
-  hello: String
-  goodbye: String
-  resolution(hash: String): [Resolution]
+extend type Query {
+  resolution(hash: String): [PeerGraphQLResolution]
 }
