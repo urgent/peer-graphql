@@ -2,7 +2,10 @@ import * as t from 'io-ts'
 import { GraphQLResponseWithData } from 'relay-runtime'
 import * as E from 'fp-ts/lib/Either'
 import { pipe, identity } from 'fp-ts/lib/function'
-import { Query } from './codegen.runtime.dist'
+import { Query } from './graphql/codegen.runtime.dist'
+
+// used when sending and receiving to WebSocket
+// like escaping data from data layer
 
 const PayloadData = t.partial({
   data: Query
@@ -37,11 +40,11 @@ const Runtime = t.intersection([PayloadData, Meta])
 type RUN = t.TypeOf<typeof Runtime>
 
 /**
- * Generic runtime to GraphQLResponseWithData
+ * Socket to GraphQLResponseWithData
  * @param {any} result runtime data
  * @returns {GraphQLResponseWithData} runtime decoded response with decode errors if any
  */
-export const runtime = async ([result]: [Promise<unknown>, void]) =>
+export const escapeSocket = async ([result]: [Promise<unknown>, void]) =>
   pipe(
     await result,
     Runtime.decode,
@@ -61,7 +64,7 @@ export const runtime = async ([result]: [Promise<unknown>, void]) =>
  * @param {any, any} fetch {operation, variables} to format
  * @return {} WebSocket message from graphql operation
  */
-export const format = ({
+export const escapeQL = ({
   operation,
   variables
 }: {

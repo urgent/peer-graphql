@@ -5,7 +5,7 @@ import { pipe, flow } from 'fp-ts/lib/function'
 import { eventEmitter } from './eventEmitter'
 import { doSend, socket } from './websocket'
 import { digestMessage } from './peerGraphQL'
-import { format, runtime, } from './graphql/graphQLResponseWithData'
+import { escapeQL, escapeSocket, } from './escape'
 import {GraphQLSchema} from 'graphql'
 import { commitLocalUpdate } from 'react-relay'
 import { createOperationDescriptor, getRequest, GraphQLTaggedNode, Environment, GraphQLResponseWithData } from 'relay-runtime'
@@ -53,14 +53,14 @@ export function fetchPeer(schema:GraphQLSchema, root:unknown):FetchFn  {
         // send to websocket
         flow(
           // format message
-          pipe({ operation, variables }, format),
+          pipe({ operation, variables }, escapeQL),
           JSON.stringify,
           // send
           doSend
         )
       ),
       // convert runtime websocket promise to graphql data
-      runtime
+      escapeSocket
     )
   }
 }
