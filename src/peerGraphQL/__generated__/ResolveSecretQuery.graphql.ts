@@ -7,7 +7,7 @@ export type ResolveSecretQueryVariables = {
     hash?: string | null;
 };
 export type ResolveSecretQueryResponse = {
-    readonly resolution: ReadonlyArray<{
+    readonly PeerGraphQLResolution: ReadonlyArray<{
         readonly hash: string | null;
         readonly time: unknown | null;
     } | null> | null;
@@ -23,7 +23,7 @@ export type ResolveSecretQuery = {
 query ResolveSecretQuery(
   $hash: String
 ) {
-  resolution(hash: $hash) {
+  PeerGraphQLResolution(hash: $hash) {
     hash
     time
   }
@@ -48,9 +48,9 @@ v1 = [
         "variableName": "hash"
       }
     ],
-    "concreteType": "Resolution",
+    "concreteType": "PeerGraphQLResolution",
     "kind": "LinkedField",
-    "name": "resolution",
+    "name": "PeerGraphQLResolution",
     "plural": true,
     "selections": [
       {
@@ -89,14 +89,14 @@ return {
     "selections": (v1/*: any*/)
   },
   "params": {
-    "cacheID": "d541c424fdbccc641ed20b4b41d836bf",
+    "cacheID": "f904c35b23b48823bfbd82bbba4082b6",
     "id": null,
     "metadata": {},
     "name": "ResolveSecretQuery",
     "operationKind": "query",
-    "text": "query ResolveSecretQuery(\n  $hash: String\n) {\n  resolution(hash: $hash) {\n    hash\n    time\n  }\n}\n"
+    "text": "query ResolveSecretQuery(\n  $hash: String\n) {\n  PeerGraphQLResolution(hash: $hash) {\n    hash\n    time\n  }\n}\n"
   }
 };
 })();
-(node as any).hash = '72bdcd65c5881d8b0ba6ea5bbb9af67e';
+(node as any).hash = '451161befb55474353b1a91098bacc22';
 export default node;

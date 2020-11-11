@@ -3,7 +3,7 @@ import { fetchPeer, manage } from './index'
 import { schema, root } from './graphql/root'
 
 const environment = new Environment({
-  network: Network.create(fetchPeer(schema, root)),
+  network: Network.create(fetchPeer('../schema.project.graphql', root)),
   store: new Store(new RecordSource())
 })
 

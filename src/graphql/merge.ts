@@ -3,7 +3,7 @@ const { GraphQLFileLoader } = require('@graphql-tools/graphql-file-loader');
 const { mergeTypeDefs } = require('@graphql-tools/merge');
 
 export async function merge(src:string) {
-  const peerGraphqlSchema = await loadSchema('./schema.graphql', {
+  const peerGraphqlSchema = await loadSchema(`${__dirname}/../../schema.peergraphql.graphql`, {
     loaders: [
       new GraphQLFileLoader()
     ]

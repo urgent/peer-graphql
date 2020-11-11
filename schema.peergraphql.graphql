@@ -10,6 +10,6 @@ type PeerGraphQLResolution {
   time: PeerGraphQLDateTime
 }
 
-extend type Query {
-  resolution(hash: String): [PeerGraphQLResolution]
+type Query {
+  PeerGraphQLResolution(hash: String): [PeerGraphQLResolution]
 }

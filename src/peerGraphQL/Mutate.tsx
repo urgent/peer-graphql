@@ -17,7 +17,7 @@ export type Mutation = t.TypeOf<typeof Mutation>
 
 const MutateQuery = graphql`
   query MutateQuery($hash: String) {
-    resolution(hash: $hash) {
+    PeerGraphQLResolution(hash: $hash) {
       hash
       time
     }

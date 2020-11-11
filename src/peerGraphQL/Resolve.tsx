@@ -31,7 +31,7 @@ export type Resolution = t.TypeOf<typeof Resolution>
 
 const KeyQuery = graphql`
   query ResolveSecretQuery($hash: String) {
-    resolution(hash: $hash) {
+    PeerGraphQLResolution(hash: $hash) {
       hash
       time
     }

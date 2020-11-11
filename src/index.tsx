@@ -81,7 +81,7 @@ function listenEvent(eventEmitter: EventEmitter) {
 async function listenSocket(schemaSrc:string, root:unknown) {
   
 
-  socket.onmessage = peerGraphql(await pipe(schemaSrc, merge), root)
+  //socket.onmessage = peerGraphql(await pipe(schemaSrc, merge), root)
 }
 
 /* #endregion */
