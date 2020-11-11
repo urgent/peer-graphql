@@ -1,20 +1,15 @@
 {
   "name": "peer-graphql",
+  "config": { "schema": "./src/schema.graphql" },
   "version": "1.0.0",
   "description": "GraphQL sourced from peers",
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
     "@babel/preset-typescript": "^7.12.1",
-    "@graphql-codegen/cli": "1.19.1",
     "fast-check": "^2.6.0",
     "jest": "^26.6.3",
-    "relay-compiler": "^10.0.1",
-    "@graphql-codegen/typescript-operations": "1.17.9",
-    "@graphql-codegen/typescript": "1.17.11",
-    "@graphql-codegen/typescript-document-nodes": "1.17.8",
-    "@graphql-codegen/typescript-graphql-files-modules": "1.18.0",
-    "@graphql-codegen/introspection": "1.18.0"
+    "relay-compiler": "^10.0.1"
   },
   "scripts": {
     "build": "tsc",
@@ -23,9 +18,7 @@
     "relay": "relay-compiler --src ./src --schema ./src/graphql/schema.graphql --language typescript --extensions js jsx tsx",
     "generate": "graphql-codegen --config codegen.yml"
   },
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "dependencies": {
     "@babel/preset-env": "^7.12.1",
     "@stablelib/base64": "^1.0.0",
