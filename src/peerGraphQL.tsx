@@ -28,7 +28,7 @@ export type Effect = E.Either<
  * @param {MessageEvent} evt WebSocket payload
  * @return {Effect} Error or side effects
  */
-export const call = (schema:GraphQLSchema, root:unknown) => (evt: MessageEvent): Effect =>
+export const call = (root:unknown) => (evt: MessageEvent): Effect =>
   pipe(
     E.parseJSON(evt.data, E.toError),
     E.mapLeft(err => {
@@ -40,7 +40,7 @@ export const call = (schema:GraphQLSchema, root:unknown) => (evt: MessageEvent):
     E.map((props: Props) => {
       switch (props.uri) {
           case 'resolve':
-              return [resolve(schema, root)(props), props];
+              return [resolve(root)(props), props];
               
           case 'mutate':
               return [mutate(props), props];
@@ -53,8 +53,8 @@ export const call = (schema:GraphQLSchema, root:unknown) => (evt: MessageEvent):
  * @param {MessageEvent} evt WebSocket payload
  * @return {Either<Error, void>} Side effect evaluation results
  */
-export const peerGraphql = (schema:GraphQLSchema, root:unknown) => flow(
-  call(schema,root),
+export const fetchPeer = (resolvers:unknown) => flow(
+  call(resolvers),
   E.map(([effect]) => effect())
 )
 

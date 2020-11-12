@@ -3,18 +3,17 @@ import * as R from 'fp-ts/lib/Reader'
 import { fanout } from 'fp-ts/lib/Strong'
 import { pipe, flow } from 'fp-ts/lib/function'
 import { eventEmitter } from './eventEmitter'
-import { doSend, socket } from './websocket'
+import { doSend } from './websocket'
 import { digestMessage } from './peerGraphQL'
 import { escapeQL, escapeSocket, } from './escape'
-import {GraphQLSchema} from 'graphql'
-import { GraphQLResponseWithData, FetchFunction } from 'relay-runtime'
-import { peerGraphql } from './peerGraphQL'
+import { GraphQLResponseWithData } from 'relay-runtime'
+import { fetchPeer } from './peerGraphQL'
 import { del, init } from './cache'
 import { merge } from './graphql/merge'
 
 type FetchFn = (operation: any, variables: any) => Promise<GraphQLResponseWithData>
 
-export const manage = init;
+export const peerBFT = init;
 
 /* #region Ask GraphQL Queries */
 
@@ -70,21 +69,7 @@ function listenEvent(eventEmitter: EventEmitter) {
 }
 /* #endregion */
 
-/* #region Answer GraphQL Queries */
 
-/**
- * On socket message, resolve graphql query and send to websocket
- * 
- * @param {string} schemaSrc Location of GraphQL schema to query with
- * @param {unknown} root GraphQL resolvers to query with
- */
-async function listenSocket(schemaSrc:string, root:unknown) {
-  
-
-  //socket.onmessage = peerGraphql(await pipe(schemaSrc, merge), root)
-}
-
-/* #endregion */
 
 /**
  * Entry point to be used in Relay networking. 
@@ -92,12 +77,12 @@ async function listenSocket(schemaSrc:string, root:unknown) {
  * Send GraphQL queries to WebSocket, listen for resolution, and return.
  * 
  * @param {string} schemaSrc Location of GraphQL schema for resolving queries
- * @param {unknown} root GraphQL schema resolvers
+ * @param {unknown} resolvers GraphQL schema resolvers
  * @returns {(any, any) => FetchFn} fetchFn for RelayEnvironment Networking
  */
-export function fetchPeer(schemaSrc:string, root:unknown):FetchFn  {
+export function peerGraphql(resolvers:unknown):FetchFn  {
   // Answer GraphQL queries. Currying runs this only once
-  listenSocket(schemaSrc, root);
+  fetchPeer(resolvers);
   // Ask GraphQL query.
   return fetch;
 }

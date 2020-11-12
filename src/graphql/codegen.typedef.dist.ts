@@ -1,4 +1,6 @@
-export default `scalar DateTime
+import { buildSchema } from 'graphql';
+
+export default buildSchema(`scalar DateTime
 
 type Keypair {
   pair: String
@@ -14,4 +16,4 @@ type Query {
   goodbye: String
   resolution(hash: String): [Resolution]
 }
-`
+`)

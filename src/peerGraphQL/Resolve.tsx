@@ -1,4 +1,4 @@
-import { graphql as _graphql, ExecutionResult, GraphQLSchema } from 'graphql'
+import { graphql as _graphql, ExecutionResult } from 'graphql'
 import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
 import { pipe, flow } from 'fp-ts/lib/function'
@@ -10,6 +10,7 @@ import { decode } from '../peerGraphQL'
 import { doSend } from '../websocket'
 import { Mutation } from './Mutate'
 import {del, read, write} from '../cache'
+import schema from '../graphql/codegen.typedef.dist'
 
 
 // define types for decode
@@ -94,10 +95,10 @@ export function check([resolve, cache]:[Resolution, Promise<unknown>]):TE.TaskEi
     })
   }
 
-export function query(schema:GraphQLSchema, root:unknown) {
+export function query(resolvers:unknown) {
   return async (resolve: Resolution): Promise<Mutation> => {
     return pipe(
-      await _graphql(schema, resolve.query, root),
+      await _graphql(schema, resolve.query, resolvers),
       async (result: ExecutionResult) => {
         return ({
           uri: 'mutate',
@@ -114,12 +115,12 @@ export async function send (resolution: Promise<Mutation>): Promise<void> {
   return pipe(await resolution, JSON.stringify, doSend)
 }
 
-export const resolve = (schema:GraphQLSchema, root:unknown) => flow(
+export const resolve = (resolvers:unknown) => flow(
   decode(Resolution),
   TE.fromEither,
   delay(),
   TE.map(lookup),
   TE.chain(check),
-  TE.chain<Error, Resolution, Promise<Mutation>>(flow(query(schema, root), TE.right)),
+  TE.chain<Error, Resolution, Promise<Mutation>>(flow(query(resolvers), TE.right)),
   TE.chain<Error, Promise<Mutation>, Promise<void>>(flow(send, TE.right))
 )

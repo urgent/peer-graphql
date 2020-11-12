@@ -1,7 +1,9 @@
-const GraphQL = require('graphql')
+import GraphQL from 'graphql';
+import { merge } from './merge';
 
 module.exports = {
     plugin: (schema, documents, config) => {
-        return `export default \`${GraphQL.printSchema(schema)}\``;
+
+        return `import { buildSchema } from 'graphql';\n\nexport default buildSchema(\`${GraphQL.printSchema(merge(schema))}\`)`;
     }
 };
