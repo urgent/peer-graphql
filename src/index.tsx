@@ -9,7 +9,6 @@ import { escapeQL, escapeSocket, } from './escape'
 import { GraphQLResponseWithData } from 'relay-runtime'
 import { fetchPeer } from './peerGraphQL'
 import { del, init } from './cache'
-import { merge } from './graphql/merge'
 
 type FetchFn = (operation: any, variables: any) => Promise<GraphQLResponseWithData>
 

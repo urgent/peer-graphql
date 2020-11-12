@@ -2,7 +2,7 @@ import * as fc from 'fast-check';
 import * as E from 'fp-ts/lib/Either'
 import { pipe, identity } from 'fp-ts/lib/function'
 import { call } from './peerGraphQL'
-import { schema, root } from './graphql/root'
+import { resolvers } from './graphql/resolvers'
 
 // simple reverse function, for property based testing
 function reverse(s) {
@@ -28,7 +28,7 @@ const mutation = {
 
 // Run
 const fold = (func) => (a) => pipe(
-    call(schema, root)({ data: JSON.stringify(a) }),
+    call(resolvers)({ data: JSON.stringify(a) }),
     E.fold(
         identity,
         func

@@ -8,6 +8,5 @@ export async function merge(schema:any) {
       new GraphQLFileLoader()
     ]
   });
-
   return mergeTypeDefs([schema, peerGraphqlSchema])
 }

@@ -1,6 +1,6 @@
 import { Environment, Network, RecordSource, Store } from 'relay-runtime'
 import { peerGraphql, peerBFT } from './index'
-import { resolvers } from './graphql/root'
+import { resolvers } from './graphql/resolvers'
 
 const environment = new Environment({
   network: Network.create(peerGraphql(resolvers)),

@@ -21,6 +21,8 @@
         "internalConsoleOptions": "neverOpen",
         "port": 9229,
         "outFiles": [ "${workspaceFolder}/lib/**/*.js"],
+        "webRoot": "${workspaceRoot}",
+        "sourceMaps": true
       },
       {
         "type": "node",
