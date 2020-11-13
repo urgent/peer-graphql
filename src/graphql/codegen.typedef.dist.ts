@@ -1,19 +1,23 @@
 import { buildSchema } from 'graphql';
 
-export default buildSchema(`scalar DateTime
+export default buildSchema(`scalar PeerGraphQLDateTime
 
-type Keypair {
+type PeerGraphQLKeypair {
   pair: String
 }
 
-type Resolution {
+type PeerGraphQLResolution {
   hash: String
-  time: DateTime
+  time: PeerGraphQLDateTime
 }
 
 type Query {
+  PeerGraphQLResolution(hash: String): [PeerGraphQLResolution]
   hello: String
   goodbye: String
-  resolution(hash: String): [Resolution]
+}
+
+schema {
+  query: Query
 }
 `)

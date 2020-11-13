@@ -1,9 +1,9 @@
 overwrite: true
-schema: 'schema.project.graphql'
+schema: 'schema.peergraphql.graphql'
 generates:
-  src/graphql/codegen2.runtime.dist.ts:
+  src/graphql/codegen.runtime.dist.ts:
     plugins:
       - src/graphql/codegen.runtime.js
-  src/graphql/codegen2.typedef.dist.ts:
+  src/graphql/codegen.typedef.dist.ts:
     plugins:
       - src/graphql/codegen.typedef.js

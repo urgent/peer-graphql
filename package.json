@@ -1,7 +1,7 @@
 {
   "name": "peer-graphql",
   "config": {
-    "schema": "./src/schema.graphql"
+    "schema": "./schema.project.graphql"
   },
   "version": "1.0.0",
   "description": "GraphQL sourced from peers",
