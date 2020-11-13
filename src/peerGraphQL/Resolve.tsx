@@ -11,17 +11,6 @@ import {read, write} from '../cache'
 import schema from '../graphql/codegen.typedef.dist'
 
 /**
- * Resolved graphql query with peer signature
- */
-export interface Resolution {
-  uri:'resolve',
-  hash:string,
-  query:string,
-  variables?:{ [x: string]: string; } | undefined,
-  signature: Uint8Array
-}
-
-/**
  * Used to avoid gc for storing peer signature on create
  */
 const KeyQuery = graphql`
@@ -67,39 +56,33 @@ export async function secret(): Promise<SignKeyPair> {
 }
 
 /**
- * Add peer signature to Request
- * 
- * @param {Request} request Request to sign
- * @returns {Promise<Resolution>} Resolution with signature
- */
-async function signRequest(request:Request):Promise<Resolution> {
-  return Object.assign(request, {signature:sign(Stablelib.decode(request.hash), (await secret())['secretKey'])})
-}
-
-/**
- * Run a GraphQL query for a Resolution and return results in a Mutation. Schema from codegen in build
+ * Run a GraphQL query for a Request and return results in a Mutation. Schema from codegen in build
  * 
  * @param {unknown} resolvers resolvers for GraphQL schema
- * @param {Promise<Resolution>} promise Resolution to query
+ * @param {Request} request Request to query
  * @returns {Promise<Mutation>} resolved graphql query for WebSocket send.
  */
 export function query(resolvers:unknown) {
-  return async (promise: Promise<Resolution>): Promise<Mutation> => {
-    return pipe(
-      await promise,
-      (resolution:Resolution):[Promise<ExecutionResult>, Resolution] => {
-        return [_graphql(schema, resolution.query, resolvers), resolution]
-      },
-      async ([promise, resolution]:[Promise<ExecutionResult>, Resolution]) => {
+  return  flow(
+    (request:Request):[Promise<ExecutionResult>, Request] => [_graphql(schema, request.query, resolvers), request],
+    async ([promise, request]:[Promise<ExecutionResult>, Request]):Promise<Mutation> => {
         return ({
           uri: 'mutate',
-          hash: resolution.hash,
+          hash: request.hash,
           data: (await promise).data,
-          signature: resolution.signature
         } as Mutation)
       }
     )
   }
+
+/**
+ * Add peer signature to Mutation
+ * 
+ * @param {Promise<Mutation>} mutation Mutation to sign
+ * @returns {Promise<Mutation>} Mutation with signature
+ */
+async function signMutation(mutation:Promise<Mutation>):Promise<Mutation> {
+  return Object.assign(await mutation, {signature:sign(Stablelib.decode((await mutation).hash), (await secret())['secretKey'])})
 }
 
 /**
@@ -121,7 +104,7 @@ export async function send (mutation: Promise<Mutation>): Promise<void> {
  */
 export const resolve = (resolvers:unknown) => flow(
   validate,
-  TE.map(signRequest),
-  TE.chain<Error, Promise<Resolution>, Promise<Mutation>>(flow(query(resolvers), TE.right)),
+  TE.chain<Error, Request, Promise<Mutation>>(flow(query(resolvers), TE.right)),
+  TE.map(signMutation),
   TE.chain<Error, Promise<Mutation>, Promise<void>>(flow(send, TE.right))
 )

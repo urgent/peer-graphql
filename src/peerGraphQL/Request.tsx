@@ -11,10 +11,9 @@ import { decode } from '../peerGraphQL'
  * Peer sends message
  * If message has {uri:'resolve'}, runtime decoded to a "Request", the type in this file
  * "Request" waits for LB, check if not resolved. 
- * On successful check, casts to a "Resolution"
- * "Resolution" provides public key signature to identify peer
- * "Resolution" runs query
- * A "Mutation" is created from the query and sent to WebSocket for peer to update
+ * On successful decode and check, runs query and creates a "Mutation"
+ * "Mutation" is signed with private key
+ * "Mutation" is sent to WebSocket for peer to update local app state
  * 
  */
 
