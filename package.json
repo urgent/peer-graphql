@@ -25,11 +25,9 @@
     "build:check": "tsc --noEmit",
     "test": "yarn run build && yarn run relay && yarn run jest -- --watch --detectOpenHandles",
     "relay": "relay-compiler --src ./src --schema ./schema.peergraphql.graphql --language typescript --extensions js jsx tsx",
-    "generate": "graphql-codegen --config codegen.yml"
+    "generate": "graphql-codegen --config codegen.yml --schema $npm_package_config_schema"
   },
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "dependencies": {
     "@babel/preset-env": "^7.12.1",
     "@graphql-tools/graphql-file-loader": "^6.2.5",

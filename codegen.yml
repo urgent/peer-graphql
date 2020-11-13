@@ -1,14 +1,9 @@
 overwrite: true
-schema: "schema.project.graphql"
-documents: "src/**/*.graphql"
+schema: 'schema.project.graphql'
 generates:
-  src/graphql:
+  src/graphql/codegen2.runtime.dist.ts:
     plugins:
-      - "typescript"
-      - "typescript-operations"
-      - "typescript-react-apollo"
-      - "typescript-graphql-files-modules"
-      - "typescript-document-nodes"
-  ./graphql.schema.json:
+      - src/graphql/codegen.runtime.js
+  src/graphql/codegen2.typedef.dist.ts:
     plugins:
-      - "introspection"
+      - src/graphql/codegen.typedef.js
