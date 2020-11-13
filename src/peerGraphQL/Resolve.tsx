@@ -1,34 +1,22 @@
 import { graphql as _graphql, ExecutionResult } from 'graphql'
 import * as TE from 'fp-ts/lib/TaskEither'
-import * as E from 'fp-ts/lib/Either'
 import { pipe, flow } from 'fp-ts/lib/function'
-import * as t from 'io-ts'
 import { sign, SignKeyPair } from 'tweetnacl'
 import * as Stablelib from '@stablelib/base64'
 import graphql from 'babel-plugin-relay/macro'
-import { decode } from '../peerGraphQL'
+import { Request, validate } from './Request'
 import { doSend } from '../websocket'
 import { Mutation } from './Mutate'
-import {del, read, write} from '../cache'
+import {read, write} from '../cache'
 import schema from '../graphql/codegen.typedef.dist'
 
-
-// define types for decode
-const Header = t.type({
-  uri: t.literal('resolve'),
-  hash: t.string,
-  query: t.string,
-})
-
-const Body = t.partial({
-  variables: t.record(t.string, t.string),
-  key: t.string,
-  cache: t.string
-})
-
-const Resolution = t.intersection([Header, Body])
-
-export type Resolution = t.TypeOf<typeof Resolution>
+export interface Resolution {
+  uri:'resolve',
+  hash:string,
+  query:string,
+  variables?:{ [x: string]: string; } | undefined,
+  signature: Uint8Array
+}
 
 const KeyQuery = graphql`
   query ResolveSecretQuery($hash: String) {
@@ -38,17 +26,6 @@ const KeyQuery = graphql`
     }
   }
 `
-
-export function delay (): (
-  ma: TE.TaskEither<Error, Resolution>
-) => TE.TaskEither<Error, Resolution> {
-  return ma => () =>
-    new Promise(resolve => {
-      setTimeout(() => {
-        ma().then(resolve)
-      }, (Math.floor(Math.random() * 30) + 1) * 20)
-    })
-}
 
 export async function secret (): Promise<SignKeyPair> {
   const data = await read(`client:Sign.KeyPair`) as { pair: string }
@@ -78,33 +55,26 @@ export async function secret (): Promise<SignKeyPair> {
   }
 }
 
-export function lookup(resolution:Resolution):[Resolution, Promise<unknown>] { 
-  return [resolution, read(`client:Resolution:${resolution.hash}`)]
+async function cast(promise:Request):Promise<Resolution> {
+  return pipe(
+    await promise,
+    async (request:Request) => Object.assign(request, {signature:sign(Stablelib.decode(request.hash), (await secret())['secretKey'])})
+  )
 }
 
-export function check([resolve, cache]:[Resolution, Promise<unknown>]):TE.TaskEither<Error, Resolution> {
-    return () => new Promise( (_resolve) => {
-      cache.then((result) => {
-        if(result) {
-          del(`client:Resolution:${resolve.hash}`);
-          _resolve(E.left(new Error('Message already resolved')));
-        } else {
-          _resolve(E.right(resolve))
-        }
-      })
-    })
-  }
-
 export function query(resolvers:unknown) {
-  return async (resolve: Resolution): Promise<Mutation> => {
+  return async (promise: Promise<Resolution>): Promise<Mutation> => {
     return pipe(
-      await _graphql(schema, resolve.query, resolvers),
-      async (result: ExecutionResult) => {
+      await promise,
+      (resolution:Resolution):[Promise<ExecutionResult>, Resolution] => {
+        return [_graphql(schema, resolution.query, resolvers), resolution]
+      },
+      async ([promise, resolution]:[Promise<ExecutionResult>, Resolution]) => {
         return ({
           uri: 'mutate',
-          hash: resolve.hash,
-          data: result.data,
-          signature: sign(Stablelib.decode(resolve.hash), (await secret())['secretKey'])
+          hash: resolution.hash,
+          data: (await promise).data,
+          signature: resolution.signature
         } as Mutation)
       }
     )
@@ -115,12 +85,11 @@ export async function send (resolution: Promise<Mutation>): Promise<void> {
   return pipe(await resolution, JSON.stringify, doSend)
 }
 
+
+
 export const resolve = (resolvers:unknown) => flow(
-  decode(Resolution),
-  TE.fromEither,
-  delay(),
-  TE.map(lookup),
-  TE.chain(check),
-  TE.chain<Error, Resolution, Promise<Mutation>>(flow(query(resolvers), TE.right)),
+  validate,
+  TE.map(cast),
+  TE.chain<Error, Promise<Resolution>, Promise<Mutation>>(flow(query(resolvers), TE.right)),
   TE.chain<Error, Promise<Mutation>, Promise<void>>(flow(send, TE.right))
 )

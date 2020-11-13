@@ -3,21 +3,23 @@ import { graphql as _graphql } from 'graphql'
 import { resolvers } from '../graphql/resolvers'
 import { query, resolve } from './Resolve'
 import schema from '../graphql/codegen.typedef.dist'
+
 // need to setup state management
 // event emitter for state mutations
 import { environment } from '../RelayEnvironment'
 
 
-const payload = {
+const request = {
     uri: fc.constant("resolve"),
-    hash: fc.hexaString(40, 40),
+    hash: fc.hexaString({ minLength: 40, maxLength: 40 }),
     query: fc.constant(`query AppHelloQuery {hello}`),
-    variables: fc.constant({})
+    variables: fc.constant({}),
 };
+
 
 test('let query give a resolve uri', (done) => {
     fc.assert(
-        fc.asyncProperty(fc.record(payload), async (a) => {
+        fc.asyncProperty(fc.record(request), async (a) => {
             const query1 = await query(schema, resolvers)(a)
             expect(query1.uri).toBe("mutate")
             done()
@@ -27,7 +29,7 @@ test('let query give a resolve uri', (done) => {
 
 test('let query twice be the same data as query once', (done) => {
     fc.assert(
-        fc.asyncProperty(fc.record(payload), async (a) => {
+        fc.asyncProperty(fc.record(request), async (a) => {
             const query1 = await query(resolvers)(a)
             const query2 = await query(resolvers)(a)
             expect(query1.data).toMatchObject(query2.data)
@@ -38,7 +40,7 @@ test('let query twice be the same data as query once', (done) => {
 
 test('let query data hello to be world', (done) => {
     fc.assert(
-        fc.asyncProperty(fc.record(payload), async (a) => {
+        fc.asyncProperty(fc.record(request), async (a) => {
             const query1 = await query(resolvers)(a)
             expect(query1.data.hello).toBe('world')
             done()
@@ -48,7 +50,7 @@ test('let query data hello to be world', (done) => {
 
 test('let query to give the same data as graphql ', (done) => {
     fc.assert(
-        fc.asyncProperty(fc.record(payload), async (a) => {
+        fc.asyncProperty(fc.record(request), async (a) => {
             const query1 = await query(resolvers)(a)
             const query2 = await _graphql(schema, a.query, resolvers)
             expect(query1.data).toMatchObject(query2.data)
