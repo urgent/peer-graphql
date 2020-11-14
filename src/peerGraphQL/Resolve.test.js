@@ -16,11 +16,14 @@ const request = {
     variables: fc.constant({}),
 };
 
+const socketListen = new WebSocket(
+    'wss://connect.websocket.in/v3/1?apiKey=4sC6D9hsMYg5zcl15Y94nXNz8KAxr8eezGglKE9FkhRLnHcokuKsgCCQKZcW'
+)
 
 test('let query give a resolve uri', (done) => {
     fc.assert(
         fc.asyncProperty(fc.record(request), async (a) => {
-            const query1 = await query(schema, resolvers)(a)
+            const query1 = await query(resolvers)(a)
             expect(query1.uri).toBe("mutate")
             done()
         })
@@ -65,18 +68,14 @@ test('resolution query works ', async (done) => {
     done()
 })
 
-export const socketListen = new WebSocket(
-    'wss://connect.websocket.in/v3/1?apiKey=4sC6D9hsMYg5zcl15Y94nXNz8KAxr8eezGglKE9FkhRLnHcokuKsgCCQKZcW'
-)
-
 test('resolve works ', async (done) => {
     jest.setTimeout(30000)
-    const resolution = resolve(schema, `query ResolutionQuery {resolution{hash,time}}`, resolvers)({ uri: 'resolve', hash: '123456', query: `query AppHelloQuery {hello}` })
+    const resolution = resolve(resolvers)({ uri: 'resolve', hash: '123456', query: `query AppHelloQuery {hello}` })
     expect(typeof resolution).toEqual('function')
     // 1. listen to events, make sure they receive
     // 2. Relay doing something on second call, need units for relay() function
     socketListen.onmessage = (evt) => {
-        expect(JSON.parse(evt.data)['data']).toEqual({ "hello": null });
+        expect(JSON.parse(evt.data)['data']).toEqual({ "hello": "world" });
         done()
     }
     await resolution();

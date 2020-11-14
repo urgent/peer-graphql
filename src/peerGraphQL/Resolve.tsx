@@ -64,7 +64,9 @@ export async function secret(): Promise<SignKeyPair> {
  */
 export function query(resolvers:unknown) {
   return  flow(
-    (request:Request):[Promise<ExecutionResult>, Request] => [_graphql(schema, request.query, resolvers), request],
+    (request:Request):[Promise<ExecutionResult>, Request] => {
+      return [_graphql(schema, request.query, resolvers), request];
+    },
     async ([promise, request]:[Promise<ExecutionResult>, Request]):Promise<Mutation> => {
         return ({
           uri: 'mutate',
