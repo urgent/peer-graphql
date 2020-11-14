@@ -4,9 +4,8 @@ import { failure } from 'io-ts/lib/PathReporter'
 import { flow, pipe } from 'fp-ts/lib/function'
 import { TaskEither } from 'fp-ts/lib/TaskEither'
 import { IOEither } from 'fp-ts/lib/IOEither'
-import { resolve } from  './peerGraphQL/Resolve'
-import { mutate } from './peerGraphQL/Mutate'
-import {GraphQLSchema} from 'graphql'
+import { resolve } from  './listen/Resolve'
+import { mutate } from './listen/Mutate'
 
 /**
  * Minimum properties of WebSocket message to invoke a command
@@ -53,7 +52,7 @@ export const call = (root:unknown) => (evt: MessageEvent): Effect =>
  * @param {MessageEvent} evt WebSocket payload
  * @return {Either<Error, void>} Side effect evaluation results
  */
-export const fetchPeer = (resolvers:unknown) => flow(
+export const listenWebsocket = (resolvers:unknown) => flow(
   call(resolvers),
   E.map(([effect]) => effect())
 )

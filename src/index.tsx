@@ -4,10 +4,9 @@ import { fanout } from 'fp-ts/lib/Strong'
 import { pipe, flow } from 'fp-ts/lib/function'
 import { eventEmitter } from './eventEmitter'
 import { doSend } from './websocket'
-import { digestMessage } from './peerGraphQL'
 import { escapeQL, escapeSocket, } from './escape'
 import { GraphQLResponseWithData } from 'relay-runtime'
-import { fetchPeer } from './peerGraphQL'
+import { listenWebsocket, digestMessage } from './listen'
 import { del, init } from './cache'
 
 type FetchFn = (operation: any, variables: any) => Promise<GraphQLResponseWithData>
@@ -81,7 +80,7 @@ function listenEvent(eventEmitter: EventEmitter) {
  */
 export function peerGraphql(resolvers:unknown):FetchFn  {
   // Answer GraphQL queries. Currying runs this only once
-  fetchPeer(resolvers);
+  listenWebsocket(resolvers);
   // Ask GraphQL query.
   return fetch;
 }

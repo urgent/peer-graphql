@@ -1,7 +1,7 @@
 import * as IOE from 'fp-ts/lib/IOEither'
 import { flow } from 'fp-ts/lib/function'
 import * as t from 'io-ts'
-import { decode } from '../peerGraphQL'
+import { decode } from '../listen'
 import { EventEmitter } from 'events'
 import { eventEmitter } from '../eventEmitter'
 import graphql from 'babel-plugin-relay/macro'

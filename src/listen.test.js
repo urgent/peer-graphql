@@ -1,7 +1,7 @@
 import * as fc from 'fast-check';
 import * as E from 'fp-ts/lib/Either'
 import { pipe, identity } from 'fp-ts/lib/function'
-import { call } from './peerGraphQL'
+import { call } from './listen'
 import { resolvers } from './graphql/resolvers'
 
 // simple reverse function, for property based testing
