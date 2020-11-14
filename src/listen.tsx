@@ -52,7 +52,7 @@ export const call = (root:unknown) => (evt: MessageEvent): Effect =>
  * @param {MessageEvent} evt WebSocket payload
  * @return {Either<Error, void>} Side effect evaluation results
  */
-export const listenWebsocket = (resolvers:unknown) => flow(
+export const listen = (resolvers:unknown) => flow(
   call(resolvers),
   E.map(([effect]) => effect())
 )

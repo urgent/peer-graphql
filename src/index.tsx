@@ -6,7 +6,7 @@ import { eventEmitter } from './eventEmitter'
 import { doSend } from './websocket'
 import { escapeQL, escapeSocket, } from './escape'
 import { GraphQLResponseWithData } from 'relay-runtime'
-import { listenWebsocket, digestMessage } from './listen'
+import { listen, digestMessage } from './listen'
 import { del, init } from './cache'
 
 type FetchFn = (operation: any, variables: any) => Promise<GraphQLResponseWithData>
@@ -79,8 +79,8 @@ function listenEvent(eventEmitter: EventEmitter) {
  * @returns {(any, any) => FetchFn} fetchFn for RelayEnvironment Networking
  */
 export function peerGraphql(resolvers:unknown):FetchFn  {
-  // Answer GraphQL queries. Currying runs this only once
-  listenWebsocket(resolvers);
-  // Ask GraphQL query.
+  // Support peers. Currying in RelayEnvironment calls this only once
+  listen(resolvers);
+  // Provided to RelayEnvironment Networking
   return fetch;
 }
