@@ -15,7 +15,7 @@ import schema from '../graphql/codegen.typedef.dist'
  */
 const KeyQuery = graphql`
   query ResolveSecretQuery($hash: String) {
-    PeerGraphQLResolution(hash: $hash) {
+    resolution(hash: $hash) {
       hash
       time
     }

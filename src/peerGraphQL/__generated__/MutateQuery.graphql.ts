@@ -7,7 +7,7 @@ export type MutateQueryVariables = {
     hash?: string | null;
 };
 export type MutateQueryResponse = {
-    readonly PeerGraphQLResolution: ReadonlyArray<{
+    readonly resolution: ReadonlyArray<{
         readonly hash: string | null;
         readonly time: unknown | null;
     } | null> | null;
@@ -23,7 +23,7 @@ export type MutateQuery = {
 query MutateQuery(
   $hash: String
 ) {
-  PeerGraphQLResolution(hash: $hash) {
+  resolution(hash: $hash) {
     hash
     time
   }
@@ -48,9 +48,9 @@ v1 = [
         "variableName": "hash"
       }
     ],
-    "concreteType": "PeerGraphQLResolution",
+    "concreteType": "Resolution",
     "kind": "LinkedField",
-    "name": "PeerGraphQLResolution",
+    "name": "resolution",
     "plural": true,
     "selections": [
       {
@@ -89,14 +89,14 @@ return {
     "selections": (v1/*: any*/)
   },
   "params": {
-    "cacheID": "1aa7d02a8979f052bcf4e1c270b4a1df",
+    "cacheID": "c93cbe2041a101002f27b250b7b3e6d6",
     "id": null,
     "metadata": {},
     "name": "MutateQuery",
     "operationKind": "query",
-    "text": "query MutateQuery(\n  $hash: String\n) {\n  PeerGraphQLResolution(hash: $hash) {\n    hash\n    time\n  }\n}\n"
+    "text": "query MutateQuery(\n  $hash: String\n) {\n  resolution(hash: $hash) {\n    hash\n    time\n  }\n}\n"
   }
 };
 })();
-(node as any).hash = '02d9fc174ec4905e6635a1fab6dcc643';
+(node as any).hash = '66bc37801473b109e543b636b3754b39';
 export default node;

@@ -1,7 +1,18 @@
-module.exports = {
-    plugin: (schema, documents, config) => {
+const { loadSchema } = require('@graphql-tools/load');
+const { GraphQLFileLoader } = require('@graphql-tools/graphql-file-loader');
+const { mergeSchemas } = require('@graphql-tools/merge');
 
-        const typesMap = schema.getTypeMap();
+module.exports = {
+    plugin: async (schema, documents, config) => {
+
+        const peerGraphqlSchema = await loadSchema(`${__dirname}/../../${process.argv[5]}`, {
+            loaders: [
+                new GraphQLFileLoader()
+            ]
+        });
+        const merged = await mergeSchemas({ schemas: [schema, peerGraphqlSchema] });
+
+        const typesMap = merged.getTypeMap();
 
         const dict = {
             'String': 'string',
@@ -16,7 +27,7 @@ module.exports = {
                 return `${acc}\n  t.record(\n    t.literal('${field.name.value}'),\n    t.union([\n      ${typesMap[field.type.type.name.value]
                     .astNode.fields.map((field) =>
                         `t.record(t.literal('${field.name.value}'), t.${dict[field.type.name.value]})`
-                    ).join(',\n      ')}\n    ])\n  )`
+                    ).join(',\n      ')}\n    ])\n  ),`
             }
             //scalar values only
             return `${acc}\n  t.record(t.literal('${field.name.value}'), t.${dict[field.type.name.value]}),`;

@@ -1,8 +1,8 @@
 
 const { loadSchema } = require('@graphql-tools/load');
 const { GraphQLFileLoader } = require('@graphql-tools/graphql-file-loader');
-const { mergeTypeDefs } = require('@graphql-tools/merge');
-const { print } = require('graphql');
+const { mergeSchemas } = require('@graphql-tools/merge');
+const { printSchema } = require('graphql');
 
 module.exports = {
     plugin: async (schema, documents, config) => {
@@ -11,7 +11,7 @@ module.exports = {
                 new GraphQLFileLoader()
             ]
         });
-        const merged = mergeTypeDefs([schema, peerGraphqlSchema]);
-        return `import { buildSchema } from 'graphql';\n\nexport default buildSchema(\`${print(merged)}\`)`;
+        const merged = mergeSchemas({ schemas: [schema, peerGraphqlSchema] });
+        return `import { buildSchema } from 'graphql';\n\nexport default buildSchema(\`${printSchema(merged)}\`)`;
     }
 };

@@ -2,10 +2,12 @@ import * as t from 'io-ts'
 
 export const Query = t.union([
   t.record(
-    t.literal('PeerGraphQLResolution'),
+    t.literal('resolution'),
     t.union([
       t.record(t.literal('hash'), t.string),
       t.record(t.literal('time'), t.undefined)
     ])
-  )
+  ),
+  t.record(t.literal('hello'), t.string),
+  t.record(t.literal('goodbye'), t.string),
 ])
