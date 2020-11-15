@@ -72,10 +72,12 @@ test('resolve works ', async (done) => {
     jest.setTimeout(30000)
     const resolution = resolve(resolvers)({ uri: 'resolve', hash: '123456', query: `query AppHelloQuery {hello}` })
     expect(typeof resolution).toEqual('function')
-    // 1. listen to events, make sure they receive
-    // 2. Relay doing something on second call, need units for relay() function
     socketListen.onmessage = (evt) => {
-        expect(JSON.parse(evt.data)['data']).toEqual({ "hello": "world" });
+        const parsed = JSON.parse(evt.data);
+        if (parsed.uri === 'mutate' && parsed.hash === '123456') {
+            expect(parsed.data).toEqual({ "hello": "world" });
+            done()
+        }
         done()
     }
     await resolution();

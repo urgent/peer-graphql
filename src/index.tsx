@@ -8,6 +8,7 @@ import { escapeQL, escapeSocket, } from './escape'
 import { GraphQLResponseWithData } from 'relay-runtime'
 import { listen, digestMessage } from './listen'
 import { del, init } from './cache'
+import {socket} from './websocket'
 
 type FetchFn = (operation: any, variables: any) => Promise<GraphQLResponseWithData>
 
@@ -23,13 +24,14 @@ export const peerBFT = init;
  * @param {unknown} variables Variables for query operation
  * @return {Promise<GraphQLResponseWithData>} Resolution of query by peers via WebSocket
  */
-async function fetch(operation:any, variables:any) {
+export async function fetch(operation:any, variables:any) {
   return pipe(
     // hash graphql query for unique listener
     await digestMessage(operation.text),
     // use hash as input for both send and _respond
     fanout({ ...R.Strong, ...R.Category })(
-      // listen for websocket resolution
+      // listen for websocket resolution from eventEmitter
+      // Does not listen on websocket directly. Needs runtime decoding, and caching for load balancing
       listenEvent(eventEmitter),
       // send to websocketPromise<GraphQLResponseWithData>
       flow(
@@ -61,7 +63,7 @@ function listenEvent(eventEmitter: EventEmitter) {
 
     setTimeout(() => {
       eventEmitter.off(hash, resolve)
-      reject({})
+      reject({message:'Timeout waiting for peer to resolve query'})
     }, 3000)
   })
 }
@@ -80,7 +82,7 @@ function listenEvent(eventEmitter: EventEmitter) {
  */
 export function peerGraphql(resolvers:unknown):FetchFn  {
   // Support peers. Currying in RelayEnvironment calls this only once
-  listen(resolvers);
+  socket.onmessage= listen(resolvers);
   // Provided to RelayEnvironment Networking
   return fetch;
 }
