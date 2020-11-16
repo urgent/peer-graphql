@@ -1,46 +1,85 @@
-import { fetch } from './index'
+import { fetch, listenEvent, peerGraphql } from './index'
 import { TextEncoder, TextDecoder } from 'util'
 import { Crypto } from "@peculiar/webcrypto"
 import { eventEmitter } from './eventEmitter'
+import { digestMessage } from './listen'
+import { resolvers } from './graphql/resolvers'
+
 
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder
 global.crypto = new Crypto()
-
 const socketListen = new WebSocket(
     'wss://connect.websocket.in/v3/1?apiKey=4sC6D9hsMYg5zcl15Y94nXNz8KAxr8eezGglKE9FkhRLnHcokuKsgCCQKZcW'
 )
 
-const operation = { text: `query AppHelloQuery {hello}` };
+// avoid hash collisions
+// need unique queries, the argument for the "fetch" function, for each test
+// otherwise, one test listens on hash, and receives event emitted by different test
+
+// no websocket listener without peerGraphql function running
+// can separate with unique eventEmitter input
+
+afterEach(() => {
+    socketListen.onmessage = () => { }
+});
+
+
 
 test('fetch sends to websocket', async (done) => {
-    fetch(operation)
+    jest.setTimeout(10000)
+
     socketListen.onmessage = (evt) => {
         const data = JSON.parse(evt.data);
         // other tests in this file will send messages to socket
         if (data.uri === 'resolve') {
-            expect(data.query).toEqual(operation.text)
+            expect(data.query).toEqual(`query SendQuery {hello}`)
             done();
         }
     }
+    // need to handle rejection, not sending back an event to resolve query
+    try {
+        await fetch({ text: `query SendQuery {hello}` })
+    } catch (e) { }
 })
 
-test('fetch sends to websocket and responds to emitted event of hash', async (done) => {
-    jest.setTimeout(30000)
+test('fetch sends to websocket and receives emitted event of hash', async (done) => {
     socketListen.onmessage = (evt) => {
         const data = JSON.parse(evt.data);
         if (data.uri === 'resolve') {
             eventEmitter.emit(data.hash, { data: { hello: 'world' } })
         }
     }
-    expect(await fetch(operation)).toEqual({ data: { hello: 'world' } })
+    expect(await fetch({ text: `query ReceiveQuery {hello}` })).toEqual({ data: { hello: 'world' } })
     done()
 })
 
-// listen event times out
+test('fetch times out', async (done) => {
+    expect.assertions(1);
+    await expect(fetch({ text: `query TimeoutQuery {hello}` })).rejects.toEqual(
+        new Error('Timeout waiting for peer to resolve query')
+    );
+    done();
+})
 
-// listen event receives websocket
+test('listenEvent receives event', async (done) => {
+    jest.setTimeout(10000)
+    expect.assertions(1);
+    const operation = { text: `query ListenReceiveQuery {hello}` };
+    const hash = await digestMessage(operation.text)
+    const res = listenEvent(eventEmitter)(hash);
+    eventEmitter.emit(hash, { data: { hello: 'world' } })
+    expect(await res).toEqual({ data: { hello: 'world' } });
+    done()
+})
 
-// peerGraphql listens
-
-// peerGraphql sends
+test('peerGraphql sends to websocket and receives emitted event of hash', async (done) => {
+    socketListen.onmessage = (evt) => {
+        const data = JSON.parse(evt.data);
+        if (data.uri === 'resolve') {
+            eventEmitter.emit(data.hash, { data: { hello: 'world' } })
+        }
+    }
+    expect(await peerGraphql(resolvers)({ text: `query PeerGraphQLSendQuery {hello}` })).toEqual({ data: { hello: 'world' } })
+    done()
+})

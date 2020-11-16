@@ -54,16 +54,15 @@ export async function fetch(operation:any, variables:any) {
  * @param {string} hash event name to listen for
  * @returns {unknown} data received from event
  */
-function listenEvent(eventEmitter: EventEmitter) {
+export function listenEvent(eventEmitter: EventEmitter) {
   return (hash: string) => new Promise((resolve, reject) => {
     eventEmitter.once(hash, data => {
       del(`client:Resolution:${hash}`)
       resolve(data)
     })
-
     setTimeout(() => {
       eventEmitter.off(hash, resolve)
-      reject({message:'Timeout waiting for peer to resolve query'})
+      reject(new Error('Timeout waiting for peer to resolve query'))
     }, 3000)
   })
 }
