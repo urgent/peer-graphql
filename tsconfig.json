@@ -12,8 +12,7 @@
       "strict": true,
       "noFallthroughCasesInSwitch": true,
       "forceConsistentCasingInFileNames": true,
-      "stripInternal": true,
-      "jsx": "react"
+      "stripInternal": true
     },
     "include": ["src"],
     "exclude": [
