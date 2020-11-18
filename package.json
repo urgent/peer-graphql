@@ -28,7 +28,9 @@
     "relay": "relay-compiler --src ./src --schema ./schema.peergraphql.graphql --language typescript --extensions js jsx tsx",
     "generate": "graphql-codegen --config codegen.yml --schema $npm_package_config_schema"
   },
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "dependencies": {
     "@babel/preset-env": "^7.12.1",
     "@graphql-tools/graphql-file-loader": "^6.2.5",
@@ -38,6 +40,7 @@
     "@types/node": "^14.11.10",
     "@types/react-relay": "^7.0.15",
     "@types/relay-runtime": "^10.0.4",
+    "@types/ws": "^7.4.0",
     "babel-plugin-relay": "^10.0.1",
     "events": "^3.2.0",
     "fp-ts": "^2.8.4",
@@ -57,13 +60,18 @@
     "type": "git",
     "url": "git+https://github.com/urgent/peer-graphql"
   },
-  "keywords": ["peer-graphql", "peer", "graphql", "p2p"],
+  "keywords": [
+    "peer-graphql",
+    "peer",
+    "graphql",
+    "p2p"
+  ],
   "author": "urgent",
   "bugs": {
     "url": "https://github.com/urgent/peer-graphql/projects/3"
   },
   "homepage": "https://github.com/urgent/peer-graphql",
   "engines": {
-    "node": ">= 12.0.0"
+    "node": ">= 10.0.0"
   }
 }

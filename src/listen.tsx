@@ -6,6 +6,7 @@ import { TaskEither } from 'fp-ts/lib/TaskEither'
 import { IOEither } from 'fp-ts/lib/IOEither'
 import { resolve } from  './listen/Resolve'
 import { mutate } from './listen/Mutate'
+import { MessageEvent } from 'ws'
 
 /**
  * Minimum properties of WebSocket message to invoke a command
@@ -27,9 +28,10 @@ export type Effect = E.Either<
  * @param {MessageEvent} evt WebSocket payload
  * @return {Effect} Error or side effects
  */
+
 export const call = (root:unknown) => (evt: MessageEvent): Effect =>
   pipe(
-    E.parseJSON(evt.data, E.toError),
+    E.parseJSON(evt.data as string, E.toError),
     E.mapLeft(err => {
       return new Error(String(err))
     }),
