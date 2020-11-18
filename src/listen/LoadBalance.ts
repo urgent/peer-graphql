@@ -3,7 +3,7 @@ import * as t from 'io-ts'
 import * as E from 'fp-ts/lib/Either'
 import { pipe, flow } from 'fp-ts/lib/function'
 import { del, read } from '../cache'
-import { decode } from '../listen'
+import { decode } from '../decode'
 
 /*
  * The "LoadBalance" type is a WebSocket message from a peer, requesting a query to be resolved by another peer
