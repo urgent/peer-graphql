@@ -1,6 +1,6 @@
 import { buildSchema } from 'graphql';
 
-export default buildSchema(`scalar DateTime
+export const schemaString = `scalar DateTime
 
 type Keypair {
   pair: String
@@ -16,4 +16,6 @@ type Query {
   hello: String
   goodbye: String
 }
-`)
+`;
+
+export default buildSchema(schemaString)

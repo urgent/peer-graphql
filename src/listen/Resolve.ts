@@ -1,14 +1,13 @@
-import { graphql as _graphql, ExecutionResult } from 'graphql'
+import { graphql as _graphql, ExecutionResult, GraphQLSchema } from 'graphql'
 import * as TE from 'fp-ts/lib/TaskEither'
 import { pipe, flow } from 'fp-ts/lib/function'
 import { sign, SignKeyPair } from 'tweetnacl'
 import * as Stablelib from '@stablelib/base64'
-import { graphql } from 'react-relay'
+import graphql from 'babel-plugin-relay/macro'
 import { LoadBalance, loadBalance } from './LoadBalance'
 import { doSend } from '../websocket'
 import { Mutation } from './Mutate'
 import {read, write} from '../cache'
-import schema from '../graphql/codegen.typedef.dist'
 
 /**
  * Used to avoid gc for storing peer signature on create
@@ -58,14 +57,14 @@ export async function secret(): Promise<SignKeyPair> {
 /**
  * Run a GraphQL query for a LoadBalance request and return results in a Mutation. Schema from codegen in build
  * 
- * @param {unknown} resolvers resolvers for GraphQL schema
+ * @param {GraphQLSchema} schema executable GraphQL schema
  * @param {LoadBalance} load request to query
  * @returns {Promise<Mutation>} resolved graphql query for WebSocket send.
  */
-export function query(resolvers:unknown) {
+export function query(schema:GraphQLSchema) {
   return  flow(
     (load:LoadBalance):[Promise<ExecutionResult>, LoadBalance] => {
-      return [_graphql(schema, load.query, resolvers), load];
+      return [_graphql(schema, load.query), load];
     },
     async ([promise, load]:[Promise<ExecutionResult>, LoadBalance]):Promise<Mutation> => {
         return ({
@@ -100,13 +99,13 @@ export async function send (mutation: Promise<Mutation>): Promise<void> {
 /**
  * Resolve WebSocket messages requesting GraphQL resolution
  * 
- * @param {unknown} resolvers GraphQL schema resolvers
+ * @param {GraphQLSchema} schema GraphQL schema resolvers
  * @param {unknown} a WebSocket data payload
  * @returns {TE.TaskEither<Error, Promise<void>>} Side effect which sends message or returns error
  */
-export const resolve = (resolvers:unknown) => flow(
+export const resolve = (schema:GraphQLSchema) => flow(
   loadBalance,
-  TE.chain<Error, LoadBalance, Promise<Mutation>>(flow(query(resolvers), TE.right)),
+  TE.chain<Error, LoadBalance, Promise<Mutation>>(flow(query(schema), TE.right)),
   TE.map(signMutation),
   TE.chain<Error, Promise<Mutation>, Promise<void>>(flow(send, TE.right))
 )

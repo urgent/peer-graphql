@@ -4,7 +4,7 @@ import * as t from 'io-ts'
 import { decode } from '../decode'
 import { EventEmitter } from 'events'
 import { eventEmitter } from '../eventEmitter'
-import { graphql } from 'react-relay'
+import graphql from 'babel-plugin-relay/macro'
 import {read, write } from '../cache'
 
 const Mutation = t.type({

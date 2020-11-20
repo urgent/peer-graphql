@@ -1,8 +1,7 @@
 import * as fc from 'fast-check';
-import { graphql as _graphql } from 'graphql'
-import { resolvers } from '../graphql/resolvers'
+import { graphql } from 'graphql'
+import { schemaWithMocks } from '../graphql/resolvers'
 import { query, resolve } from './Resolve'
-import schema from '../graphql/codegen.typedef.dist'
 
 // need to setup state management
 // event emitter for state mutations
@@ -23,7 +22,7 @@ const socketListen = new WebSocket(
 test('let query give a resolve uri', (done) => {
     fc.assert(
         fc.asyncProperty(fc.record(request), async (a) => {
-            const query1 = await query(resolvers)(a)
+            const query1 = await query(schemaWithMocks)(a)
             expect(query1.uri).toBe("mutate")
             done()
         })
@@ -33,8 +32,8 @@ test('let query give a resolve uri', (done) => {
 test('let query twice be the same data as query once', (done) => {
     fc.assert(
         fc.asyncProperty(fc.record(request), async (a) => {
-            const query1 = await query(resolvers)(a)
-            const query2 = await query(resolvers)(a)
+            const query1 = await query(schemaWithMocks)(a)
+            const query2 = await query(schemaWithMocks)(a)
             expect(query1.data).toMatchObject(query2.data)
             done()
         })
@@ -44,7 +43,7 @@ test('let query twice be the same data as query once', (done) => {
 test('let query data hello to be world', (done) => {
     fc.assert(
         fc.asyncProperty(fc.record(request), async (a) => {
-            const query1 = await query(resolvers)(a)
+            const query1 = await query(schemaWithMocks)(a)
             expect(query1.data.hello).toBe('world')
             done()
         })
@@ -54,8 +53,8 @@ test('let query data hello to be world', (done) => {
 test('let query to give the same data as graphql ', (done) => {
     fc.assert(
         fc.asyncProperty(fc.record(request), async (a) => {
-            const query1 = await query(resolvers)(a)
-            const query2 = await _graphql(schema, a.query, resolvers)
+            const query1 = await query(schemaWithMocks)(a)
+            const query2 = await graphql(schemaWithMocks, a.query)
             expect(query1.data).toMatchObject(query2.data)
             done()
         })
@@ -63,14 +62,14 @@ test('let query to give the same data as graphql ', (done) => {
 })
 
 test('resolution query works ', async (done) => {
-    const query = await _graphql(schema, `query ResolutionQuery {resolution{hash,time}}`, resolvers);
-    expect(query.data).toMatchObject({ resolution: [{ hash: '123', time: '1234' }] })
+    const query = await graphql(schemaWithMocks, `query ResolutionQuery {resolution{hash,time}}`);
+    expect(query.data).toMatchObject({ resolution: [{ hash: 'world', time: null }, { hash: 'world', time: null }] })
     done()
 })
 
 test('resolve works ', async (done) => {
     jest.setTimeout(30000)
-    const resolution = resolve(resolvers)({ uri: 'resolve', hash: '123456', query: `query AppHelloQuery {hello}` })
+    const resolution = resolve(schemaWithMocks)({ uri: 'resolve', hash: '123456', query: `query AppHelloQuery {hello}` })
     expect(typeof resolution).toEqual('function')
     socketListen.onmessage = (evt) => {
         const parsed = JSON.parse(evt.data);

@@ -12,6 +12,6 @@ module.exports = {
             ]
         });
         const merged = mergeSchemas({ schemas: [schema, peerGraphqlSchema] });
-        return `import { buildSchema } from 'graphql';\n\nexport default buildSchema(\`${printSchema(merged)}\`)`;
+        return `import { buildSchema } from 'graphql';\n\nexport const schemaString = \`${printSchema(merged)}\`\n\nexport default buildSchema(schemaString)`;
     }
 };

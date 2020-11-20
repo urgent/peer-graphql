@@ -5,6 +5,7 @@ import { IOEither } from 'fp-ts/lib/IOEither'
 import { resolve } from  './listen/Resolve'
 import { mutate } from './listen/Mutate'
 import { MessageEvent } from 'ws'
+import { GraphQLSchema } from 'graphql'
 
 /**
  * Minimum properties of WebSocket message to invoke a command
@@ -27,7 +28,7 @@ export type Effect = E.Either<
  * @return {Effect} Error or side effects
  */
 
-export const call = (root:unknown) => (evt: MessageEvent): Effect =>
+export const call = (schema:GraphQLSchema) => (evt: MessageEvent): Effect =>
   pipe(
     E.parseJSON(evt.data as string, E.toError),
     E.mapLeft(err => {
@@ -39,7 +40,7 @@ export const call = (root:unknown) => (evt: MessageEvent): Effect =>
     E.map((props: Props) => {
       switch (props.uri) {
           case 'resolve':
-              return [resolve(root)(props), props];
+              return [resolve(schema)(props), props];
               
           case 'mutate':
               return [mutate(props), props];
@@ -52,8 +53,8 @@ export const call = (root:unknown) => (evt: MessageEvent): Effect =>
  * @param {MessageEvent} evt WebSocket payload
  * @return {Either<Error, void>} Side effect evaluation results
  */
-export const listen = (resolvers:unknown) => flow(
-  call(resolvers),
+export const listen = (schema:GraphQLSchema) => flow(
+  call(schema),
   E.map(([effect]) => effect())
 )
 
