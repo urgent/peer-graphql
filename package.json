@@ -30,15 +30,13 @@
     "relay-compiler": "^10.0.1"
   },
   "scripts": {
-    "build": "npx babel src --out-dir lib --extensions '.ts'",
+    "build": "npx babel src --out-dir lib --extensions '.ts' && cp ./schema.peergraphql.graphql lib",
     "build:check": "tsc --noEmit",
     "test": "yarn run build && yarn run relay && yarn run jest -- --watch --detectOpenHandles",
     "relay": "relay-compiler --src ./src --schema ./schema.peergraphql.graphql --language typescript --extensions js jsx tsx",
     "generate": "graphql-codegen --config codegen.yml --schema $npm_package_config_schema"
   },
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "dependencies": {
     "@graphql-tools/graphql-file-loader": "^6.2.5",
     "@graphql-tools/load": "^6.2.5",
@@ -66,12 +64,7 @@
     "type": "git",
     "url": "git+https://github.com/urgent/peer-graphql"
   },
-  "keywords": [
-    "peer-graphql",
-    "peer",
-    "graphql",
-    "p2p"
-  ],
+  "keywords": ["peer-graphql", "peer", "graphql", "p2p"],
   "author": "urgent",
   "bugs": {
     "url": "https://github.com/urgent/peer-graphql/projects/3"
@@ -83,5 +76,8 @@
   "resolutions": {
     "babel-plugin-relay/babel-plugin-macros": "^2.8.0"
   },
-  "entry point": "lib/index.js"
+  "entry point": "lib/index.js",
+  "bin": {
+    "peer-graphql": "./generate.js"
+  }
 }

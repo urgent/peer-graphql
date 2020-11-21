@@ -12,9 +12,18 @@ const dict = {
     'id': 'string',
 }
 
+function transverse(nested) {
+    while (nested.hasOwnProperty('type')) {
+        nested = nested.type;
+    }
+    return nested;
+}
+
 const lookup = (field) => {
-    if (dict.hasOwnProperty(field.type.name.value)) {
-        return `${field.name.value}: t.${dict[field.type.name.value]}`
+    const nested = transverse(field)
+    console.log(nested)
+    if (dict.hasOwnProperty(nested.name.value)) {
+        return `${field.name.value}: t.${dict[nested.name.value]}`
     }
     else {
         return `${field.name.value}: t.${undefinedDefault}`
@@ -37,21 +46,12 @@ const template = ({ acc, name, fields }) =>
 
 
 module.exports = {
-    plugin: async (schema, documents, config) => {
-
-        const peerGraphqlSchema = await loadSchema(`${__dirname}/../../${process.argv[5]}`, {
-            loaders: [
-                new GraphQLFileLoader()
-            ]
-        });
-        const merged = await mergeSchemas({ schemas: [schema, peerGraphqlSchema] });
-
-        const typesMap = merged.getTypeMap();
-
-        const reduce = typesMap.Query.astNode.fields.reduce((acc, field) => {
+    generateRuntime: (schema) => {
+        const reduce = schema.Query.astNode.fields.reduce((acc, field) => {
             const name = field.name.value;
+            const nested = transverse(field)
             if (field.type.hasOwnProperty('type')) {
-                const fields = typesMap[field.type.type.name.value].astNode.fields;
+                const fields = schema[nested.name.value].astNode.fields;
                 // custom graphql type
                 return template({ acc, name, fields })
             }
@@ -60,7 +60,6 @@ module.exports = {
             return `${acc}\n  t.record(t.literal('${name}'), t.${dict[value]}),`;
         }, '');
 
-        return `import * as t from 'io-ts'\n\nexport const Query = t.union([${reduce}\n])`
-            ;
+        return `import * as t from 'io-ts'\n\nexport const Query = t.union([${reduce}\n])`;
     }
-};
+}
