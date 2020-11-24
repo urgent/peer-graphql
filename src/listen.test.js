@@ -26,9 +26,13 @@ const mutation = {
     data: fc.constant({ hello: 'world' }),
 }
 
+const socketTransport = new WebSocket(
+    'wss://connect.websocket.in/v3/1?apiKey=4sC6D9hsMYg5zcl15Y94nXNz8KAxr8eezGglKE9FkhRLnHcokuKsgCCQKZcW'
+)
+
 // Run
 const fold = (func) => (a) => pipe(
-    call(resolvers)({ data: JSON.stringify(a) }),
+    call({ schema: resolvers, socket: socketTransport })({ data: JSON.stringify(a) }),
     E.fold(
         identity,
         func

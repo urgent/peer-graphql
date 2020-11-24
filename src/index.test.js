@@ -4,12 +4,17 @@ import { Crypto } from "@peculiar/webcrypto"
 import { eventEmitter } from './eventEmitter'
 import { digestMessage } from './listen'
 import { resolvers } from './graphql/resolvers'
-
+import { create } from './websocket'
 
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder
 global.crypto = new Crypto()
+
 const socketListen = new WebSocket(
+    'wss://connect.websocket.in/v3/1?apiKey=4sC6D9hsMYg5zcl15Y94nXNz8KAxr8eezGglKE9FkhRLnHcokuKsgCCQKZcW'
+)
+
+const socketTransport = create(
     'wss://connect.websocket.in/v3/1?apiKey=4sC6D9hsMYg5zcl15Y94nXNz8KAxr8eezGglKE9FkhRLnHcokuKsgCCQKZcW'
 )
 
@@ -32,15 +37,17 @@ test('fetch sends to websocket', async (done) => {
     socketListen.onmessage = (evt) => {
         const data = JSON.parse(evt.data);
         // other tests in this file will send messages to socket
-        if (data.uri === 'resolve') {
-            expect(data.query).toEqual(`query SendQuery {hello}`)
+        if (data.uri === 'resolve' && data.query === `query IndexSendQuery {hello}`) {
+            expect(data.query).toEqual(`query IndexSendQuery {hello}`)
             done();
         }
     }
     // need to handle rejection, not sending back an event to resolve query
     try {
-        await fetch({ text: `query SendQuery {hello}` })
-    } catch (e) { }
+        await fetch(socketTransport)({ text: `query IndexSendQuery {hello}` })
+    } catch (e) {
+        console.log(e)
+    }
 })
 
 test('fetch sends to websocket and receives emitted event of hash', async (done) => {
@@ -50,13 +57,13 @@ test('fetch sends to websocket and receives emitted event of hash', async (done)
             eventEmitter.emit(data.hash, { data: { hello: 'world' } })
         }
     }
-    expect(await fetch({ text: `query ReceiveQuery {hello}` })).toEqual({ data: { hello: 'world' } })
+    expect(await fetch(socketTransport)({ text: `query ReceiveQuery {hello}` })).toEqual({ data: { hello: 'world' } })
     done()
 })
 
 test('fetch times out', async (done) => {
     expect.assertions(1);
-    await expect(fetch({ text: `query TimeoutQuery {hello}` })).rejects.toEqual(
+    await expect(fetch(socketTransport)({ text: `query TimeoutQuery {hello}` })).rejects.toEqual(
         new Error('Timeout waiting for peer to resolve query')
     );
     done();
@@ -80,6 +87,9 @@ test('peerGraphql sends to websocket and receives emitted event of hash', async 
             eventEmitter.emit(data.hash, { data: { hello: 'world' } })
         }
     }
-    expect(await peerGraphql(resolvers)({ text: `query PeerGraphQLSendQuery {hello}` })).toEqual({ data: { hello: 'world' } })
+    expect(await peerGraphql({
+        schema: resolvers,
+        url: 'wss://connect.websocket.in/v3/1?apiKey=4sC6D9hsMYg5zcl15Y94nXNz8KAxr8eezGglKE9FkhRLnHcokuKsgCCQKZcW'
+    })({ text: `query PeerGraphQLSendQuery {hello}` })).toEqual({ data: { hello: 'world' } })
     done()
 })

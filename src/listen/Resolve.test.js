@@ -15,6 +15,10 @@ const request = {
     variables: fc.constant({}),
 };
 
+const socketTransport = new WebSocket(
+    'wss://connect.websocket.in/v3/1?apiKey=4sC6D9hsMYg5zcl15Y94nXNz8KAxr8eezGglKE9FkhRLnHcokuKsgCCQKZcW'
+)
+
 const socketListen = new WebSocket(
     'wss://connect.websocket.in/v3/1?apiKey=4sC6D9hsMYg5zcl15Y94nXNz8KAxr8eezGglKE9FkhRLnHcokuKsgCCQKZcW'
 )
@@ -69,7 +73,7 @@ test('resolution query works ', async (done) => {
 
 test('resolve works ', async (done) => {
     jest.setTimeout(30000)
-    const resolution = resolve(schemaWithMocks)({ uri: 'resolve', hash: '123456', query: `query AppRepositoryNameQuery {repository(owner: "facebook", name: "relay") {name id}}` })
+    const resolution = resolve({ schema: schemaWithMocks, socket: socketTransport })({ uri: 'resolve', hash: '123456', query: `query AppRepositoryNameQuery {repository(owner: "facebook", name: "relay") {name id}}` })
     expect(typeof resolution).toEqual('function')
     socketListen.onmessage = (evt) => {
         const parsed = JSON.parse(evt.data);

@@ -4,7 +4,7 @@ import { TaskEither } from 'fp-ts/lib/TaskEither'
 import { IOEither } from 'fp-ts/lib/IOEither'
 import { resolve } from  './listen/Resolve'
 import { mutate } from './listen/Mutate'
-import { MessageEvent } from 'ws'
+import WebSocket from 'isomorphic-ws'
 import { GraphQLSchema } from 'graphql'
 
 /**
@@ -28,7 +28,7 @@ export type Effect = E.Either<
  * @return {Effect} Error or side effects
  */
 
-export const call = (schema:GraphQLSchema) => (evt: MessageEvent): Effect =>
+export const call = ({schema, socket}:{schema:GraphQLSchema, socket:WebSocket}) => (evt:WebSocket.MessageEvent): Effect =>
   pipe(
     E.parseJSON(evt.data as string, E.toError),
     E.mapLeft(err => {
@@ -40,7 +40,7 @@ export const call = (schema:GraphQLSchema) => (evt: MessageEvent): Effect =>
     E.map((props: Props) => {
       switch (props.uri) {
           case 'resolve':
-              return [resolve(schema)(props), props];
+              return [resolve({schema, socket})(props), props];
               
           case 'mutate':
               return [mutate(props), props];
@@ -53,8 +53,8 @@ export const call = (schema:GraphQLSchema) => (evt: MessageEvent): Effect =>
  * @param {MessageEvent} evt WebSocket payload
  * @return {Either<Error, void>} Side effect evaluation results
  */
-export const listen = (schema:GraphQLSchema) => flow(
-  call(schema),
+export const listen = ({schema, socket}:{schema:GraphQLSchema, socket:WebSocket}) => flow(
+  call({schema, socket}),
   E.map(async ([effect]) => {
     const res = await effect();
     return res;

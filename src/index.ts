@@ -3,16 +3,17 @@ import * as R from 'fp-ts/lib/Reader'
 import { fanout } from 'fp-ts/lib/Strong'
 import { pipe, flow } from 'fp-ts/lib/function'
 import { eventEmitter } from './eventEmitter'
-import { doSend } from './websocket'
+import { create, doSend } from './websocket'
 import { escapeQL, escapeSocket, } from './escape'
 import { GraphQLResponseWithData } from 'relay-runtime'
 import { listen, digestMessage } from './listen'
 import { del, init } from './cache'
-import {socket} from './websocket'
-import { GraphQLSchema, graphql } from 'graphql'
+import { GraphQLSchema } from 'graphql'
 import {schemaString} from './graphql/codegen.typedef.dist'
 import {makeExecutableSchema} from '@graphql-tools/schema'
 import { addMocksToSchema } from '@graphql-tools/mock';
+import WebSocket from 'isomorphic-ws'
+
 
 type FetchFn = (operation: any, variables: any) => Promise<GraphQLResponseWithData>
 
@@ -28,8 +29,8 @@ export const peerBFT = init;
  * @param {unknown} variables Variables for query operation
  * @return {Promise<GraphQLResponseWithData>} Resolution of query by peers via WebSocket
  */
-export async function fetch(operation:any, variables:any) {
-  return pipe(
+export function fetch(socket:WebSocket) {
+  return async (operation:any, variables:any) => pipe(
     // hash graphql query for unique listener
     await digestMessage(operation.text),
     // use hash as input for both send and _respond
@@ -43,7 +44,7 @@ export async function fetch(operation:any, variables:any) {
         pipe({ operation, variables }, escapeQL),
         JSON.stringify,
         // send
-        doSend
+        doSend(socket)
       )
     ),
     // convert runtime websocket promise to graphql data
@@ -83,13 +84,14 @@ export function listenEvent(eventEmitter: EventEmitter) {
  * @param {unknown} resolvers GraphQL schema resolvers
  * @returns {(any, any) => FetchFn} fetchFn for RelayEnvironment Networking
  */
-export function peerGraphql(schema:GraphQLSchema):FetchFn  {
+export function peerGraphql({schema, url}:{schema:GraphQLSchema, url:string}):FetchFn  {
   // Support peers. Currying in RelayEnvironment calls this only once
-  socket.onmessage = (evt) => {
-    listen(schema)(evt);
+  const socket = create(url);
+  socket.onmessage = (event) => {
+    listen({schema, socket})(event)
   }
   // Provided to RelayEnvironment Networking
-  return fetch;
+  return fetch(socket);
 }
 
 export function mock() {

@@ -8,7 +8,7 @@ import { LoadBalance, loadBalance } from './LoadBalance'
 import { doSend } from '../websocket'
 import { Mutation } from './Mutate'
 import {read, write} from '../cache'
-import * as E from 'fp-ts/lib/Either'
+import WebSocket from 'isomorphic-ws'
 
 /**
  * Used to avoid gc for storing peer signature on create
@@ -92,8 +92,10 @@ async function signMutation(mutation:Promise<Mutation>):Promise<Mutation> {
  * 
  * @param {Promise<Mutation>} mutation Mutation with resolved GraphQL query to send
  */
-export async function send (mutation: Promise<Mutation>): Promise<void> {
-  return pipe(await mutation, JSON.stringify, doSend)
+export function send(socket:WebSocket) {
+  return async (mutation: Promise<Mutation>): Promise<void> => {
+    return pipe(await mutation, JSON.stringify, doSend(socket))
+  }
 }
 
 
@@ -104,9 +106,9 @@ export async function send (mutation: Promise<Mutation>): Promise<void> {
  * @param {unknown} a WebSocket data payload
  * @returns {TE.TaskEither<Error, Promise<void>>} Side effect which sends message or returns error
  */
-export const resolve = (schema:GraphQLSchema) => flow(
+export const resolve = ({schema, socket}:{schema:GraphQLSchema, socket:WebSocket}) => flow(
   loadBalance,
   TE.chain<Error, LoadBalance, Promise<Mutation>>(flow(query(schema), TE.right)),
   TE.map(signMutation),
-  TE.chain<Error, Promise<Mutation>, Promise<void>>(flow(send, TE.right))
+  TE.chain<Error, Promise<Mutation>, Promise<void>>(flow(send(socket), TE.right))
 )
