@@ -17,7 +17,7 @@ import WebSocket from 'isomorphic-ws'
 
 type FetchFn = (operation: any, variables: any) => Promise<GraphQLResponseWithData>
 
-export const peerBFT = init;
+export const state = init;
 
 /* #region Ask GraphQL Queries */
 

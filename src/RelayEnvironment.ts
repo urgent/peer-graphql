@@ -1,5 +1,5 @@
 import { Environment, Network, RecordSource, Store } from 'relay-runtime'
-import { peerGraphql, peerBFT } from './index'
+import { peerGraphql, state } from './index'
 import { schemaWithMocks } from './graphql/resolvers'
 
 const environment = new Environment({
@@ -11,6 +11,6 @@ const environment = new Environment({
 })
 
 // pass environment to eventEmitter for state management
-peerBFT(environment)
+state(environment)
 
 export default environment

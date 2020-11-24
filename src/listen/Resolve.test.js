@@ -2,6 +2,7 @@ import * as fc from 'fast-check';
 import { graphql } from 'graphql'
 import { schemaWithMocks } from '../graphql/resolvers'
 import { query, resolve } from './Resolve'
+import { create } from '../websocket'
 
 // need to setup state management
 // event emitter for state mutations
@@ -19,7 +20,7 @@ const socketTransport = new WebSocket(
     'wss://connect.websocket.in/v3/1?apiKey=4sC6D9hsMYg5zcl15Y94nXNz8KAxr8eezGglKE9FkhRLnHcokuKsgCCQKZcW'
 )
 
-const socketListen = new WebSocket(
+const socketListen = create(
     'wss://connect.websocket.in/v3/1?apiKey=4sC6D9hsMYg5zcl15Y94nXNz8KAxr8eezGglKE9FkhRLnHcokuKsgCCQKZcW'
 )
 
