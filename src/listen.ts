@@ -55,7 +55,9 @@ export const call = (schema:GraphQLSchema) => (evt: MessageEvent): Effect =>
  */
 export const listen = (schema:GraphQLSchema) => flow(
   call(schema),
-  E.map(([effect]) => effect())
+  E.map(([effect]) => {
+    return effect()
+  })
 )
 
 

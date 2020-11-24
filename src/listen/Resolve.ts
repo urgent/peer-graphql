@@ -8,6 +8,7 @@ import { LoadBalance, loadBalance } from './LoadBalance'
 import { doSend } from '../websocket'
 import { Mutation } from './Mutate'
 import {read, write} from '../cache'
+import * as E from 'fp-ts/lib/Either'
 
 /**
  * Used to avoid gc for storing peer signature on create
@@ -62,7 +63,7 @@ export async function secret(): Promise<SignKeyPair> {
  * @returns {Promise<Mutation>} resolved graphql query for WebSocket send.
  */
 export function query(schema:GraphQLSchema) {
-  return  flow(
+  return flow(
     (load:LoadBalance):[Promise<ExecutionResult>, LoadBalance] => {
       return [_graphql(schema, load.query), load];
     },

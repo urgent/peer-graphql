@@ -21,7 +21,6 @@ function transverse(nested) {
 
 const lookup = (field) => {
     const nested = transverse(field)
-    console.log(nested)
     if (dict.hasOwnProperty(nested.name.value)) {
         return `${field.name.value}: t.${dict[nested.name.value]}`
     }

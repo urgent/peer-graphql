@@ -1,4 +1,5 @@
 import * as IOE from 'fp-ts/lib/IOEither'
+import * as E from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import * as t from 'io-ts'
 import { decode } from '../decode'
@@ -37,8 +38,9 @@ export async function cache (mutation: Mutation): Promise<Mutation> {
 }
 
 function emit (eventEmitter: EventEmitter) {
-  return async (mutation: Promise<Mutation>) =>{
-    eventEmitter.emit((await mutation).hash, { data: (await mutation).data })
+  return async (promise: Promise<Mutation>) => {
+    const mutation = await promise;
+    eventEmitter.emit(mutation.hash, { data: mutation.data })
   }
 }
 

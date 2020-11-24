@@ -9,7 +9,10 @@ import { GraphQLResponseWithData } from 'relay-runtime'
 import { listen, digestMessage } from './listen'
 import { del, init } from './cache'
 import {socket} from './websocket'
-import { GraphQLSchema } from 'graphql'
+import { GraphQLSchema, graphql } from 'graphql'
+import {schemaString} from './graphql/codegen.typedef.dist'
+import {makeExecutableSchema} from '@graphql-tools/schema'
+import { addMocksToSchema } from '@graphql-tools/mock';
 
 type FetchFn = (operation: any, variables: any) => Promise<GraphQLResponseWithData>
 
@@ -82,7 +85,32 @@ export function listenEvent(eventEmitter: EventEmitter) {
  */
 export function peerGraphql(schema:GraphQLSchema):FetchFn  {
   // Support peers. Currying in RelayEnvironment calls this only once
-  socket.onmessage= listen(schema);
+  socket.onmessage = (evt) => {
+    listen(schema)(evt);
+  }
   // Provided to RelayEnvironment Networking
   return fetch;
+}
+
+export function mock() {
+  // Make a GraphQL schema with no resolvers
+  const schema = makeExecutableSchema({ typeDefs: schemaString });
+
+  const mocks = {
+      Int: () => 6,
+      Float: () => 22.1,
+      String: () => 'world',
+      Resolution: () => {
+          return ({ resolution: [{ hash: 'world', time: null }] })
+      }
+    };
+
+  const preserveResolvers = false;
+
+  // Create a new schema with mocks
+  return addMocksToSchema({ schema, mocks, preserveResolvers });
+}
+
+export async function test() {
+  return;
 }

@@ -11,7 +11,7 @@ import { environment } from '../RelayEnvironment'
 const request = {
     uri: fc.constant("resolve"),
     hash: fc.hexaString({ minLength: 40, maxLength: 40 }),
-    query: fc.constant(`query AppHelloQuery {hello}`),
+    query: fc.constant(`query AppRepositoryNameQuery {repository(owner: "facebook", name: "relay") {name id}}`),
     variables: fc.constant({}),
 };
 
@@ -34,17 +34,17 @@ test('let query twice be the same data as query once', (done) => {
         fc.asyncProperty(fc.record(request), async (a) => {
             const query1 = await query(schemaWithMocks)(a)
             const query2 = await query(schemaWithMocks)(a)
-            expect(query1.data).toMatchObject(query2.data)
+            expect(query1.data.repository.name).toEqual(query2.data.repository.name)
             done()
         })
     )
 })
 
-test('let query data hello to be world', (done) => {
+test('let query data.repository.name to be world', (done) => {
     fc.assert(
         fc.asyncProperty(fc.record(request), async (a) => {
             const query1 = await query(schemaWithMocks)(a)
-            expect(query1.data.hello).toBe('world')
+            expect(query1.data.repository.name).toBe('world')
             done()
         })
     )
@@ -55,7 +55,7 @@ test('let query to give the same data as graphql ', (done) => {
         fc.asyncProperty(fc.record(request), async (a) => {
             const query1 = await query(schemaWithMocks)(a)
             const query2 = await graphql(schemaWithMocks, a.query)
-            expect(query1.data).toMatchObject(query2.data)
+            expect(query1.data.repository.name).toEqual(query2.data.repository.name)
             done()
         })
     )
@@ -69,12 +69,12 @@ test('resolution query works ', async (done) => {
 
 test('resolve works ', async (done) => {
     jest.setTimeout(30000)
-    const resolution = resolve(schemaWithMocks)({ uri: 'resolve', hash: '123456', query: `query AppHelloQuery {hello}` })
+    const resolution = resolve(schemaWithMocks)({ uri: 'resolve', hash: '123456', query: `query AppRepositoryNameQuery {repository(owner: "facebook", name: "relay") {name id}}` })
     expect(typeof resolution).toEqual('function')
     socketListen.onmessage = (evt) => {
         const parsed = JSON.parse(evt.data);
         if (parsed.uri === 'mutate' && parsed.hash === '123456') {
-            expect(parsed.data).toEqual({ "hello": "world" });
+            expect(parsed.data.repository.name).toEqual("world");
             done()
         }
         done()
