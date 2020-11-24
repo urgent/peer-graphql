@@ -55,8 +55,9 @@ export const call = (schema:GraphQLSchema) => (evt: MessageEvent): Effect =>
  */
 export const listen = (schema:GraphQLSchema) => flow(
   call(schema),
-  E.map(([effect]) => {
-    return effect()
+  E.map(async ([effect]) => {
+    const res = await effect();
+    return res;
   })
 )
 

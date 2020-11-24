@@ -56,5 +56,5 @@ export const init = (environment:Environment) => {
   }
   
   export const del = (key:string) => {
-    eventEmitter.emit('state-delete',key)
+    eventEmitter.emit('state-delete',{key})
   }
