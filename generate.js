@@ -6,7 +6,7 @@ const { loadSchema } = require('@graphql-tools/load');
 const { GraphQLFileLoader } = require('@graphql-tools/graphql-file-loader');
 const { mergeSchemas } = require('@graphql-tools/merge');
 const { printSchema } = require('graphql');
-const { generateRuntime } = require('./src/graphql/codegen.runtime');
+const { generateRuntime } = require(`${__dirname}/src/graphql/codegen.runtime`);
 const fs = require('fs');
 
 async function run(schema, documents, config) {
