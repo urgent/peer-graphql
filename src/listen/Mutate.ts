@@ -1,5 +1,4 @@
 import * as IOE from 'fp-ts/lib/IOEither'
-import * as E from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import * as t from 'io-ts'
 import { decode } from '../decode'

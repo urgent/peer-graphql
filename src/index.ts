@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import * as R from 'fp-ts/lib/Reader'
+import {Strong, Category} from 'fp-ts/lib/Reader'
 import { fanout } from 'fp-ts/lib/Strong'
 import { pipe, flow } from 'fp-ts/lib/function'
 import { eventEmitter } from './eventEmitter'
@@ -9,9 +9,6 @@ import { GraphQLResponseWithData } from 'relay-runtime'
 import { listen, digestMessage } from './listen'
 import { del, init } from './cache'
 import { GraphQLSchema } from 'graphql'
-import {schemaString} from './graphql/codegen.typedef.dist'
-import {makeExecutableSchema} from '@graphql-tools/schema'
-import { addMocksToSchema } from '@graphql-tools/mock';
 import WebSocket from 'isomorphic-ws'
 
 
@@ -34,7 +31,7 @@ export function fetch(socket:WebSocket) {
     // hash graphql query for unique listener
     await digestMessage(operation.text),
     // use hash as input for both send and _respond
-    fanout({ ...R.Strong, ...R.Category })(
+    fanout({ ...Strong, ...Category })(
       // listen for websocket resolution from eventEmitter
       // Does not listen on websocket directly. Needs runtime decoding, and caching for load balancing
       listenEvent(eventEmitter),
@@ -92,27 +89,4 @@ export function peerGraphql({schema, url}:{schema:GraphQLSchema, url:string}):Fe
   }
   // Provided to RelayEnvironment Networking
   return fetch(socket);
-}
-
-export function mock() {
-  // Make a GraphQL schema with no resolvers
-  const schema = makeExecutableSchema({ typeDefs: schemaString });
-
-  const mocks = {
-      Int: () => 6,
-      Float: () => 22.1,
-      String: () => 'world',
-      Resolution: () => {
-          return ({ resolution: [{ hash: 'world', time: null }] })
-      }
-    };
-
-  const preserveResolvers = false;
-
-  // Create a new schema with mocks
-  return addMocksToSchema({ schema, mocks, preserveResolvers });
-}
-
-export async function test() {
-  return;
 }
