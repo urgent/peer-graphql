@@ -1,18 +1,7 @@
 import { EventEmitter } from 'events'
-import {Strong, Category} from 'fp-ts/lib/Reader'
-import { fanout } from 'fp-ts/lib/Strong'
-import { pipe, flow } from 'fp-ts/lib/function'
 import { eventEmitter } from './eventEmitter'
-import { create, doSend } from './websocket'
-import { escapeQL, escapeSocket, } from './escape'
-import { GraphQLResponseWithData } from 'relay-runtime'
-import { listen, digestMessage } from './listen'
 import { del, init } from './cache'
-import { GraphQLSchema } from 'graphql'
-import WebSocket from 'isomorphic-ws'
 
-
-type FetchFn = (operation: any, variables: any) => Promise<GraphQLResponseWithData>
 
 export const state = init;
 
@@ -26,48 +15,11 @@ export const state = init;
  * @param {unknown} variables Variables for query operation
  * @return {Promise<GraphQLResponseWithData>} Resolution of query by peers via WebSocket
  */
-export function fetch(socket:WebSocket) {
-  return async (operation:any, variables:any) => pipe(
-    // hash graphql query for unique listener
-    await digestMessage(operation.text),
-    // use hash as input for both send and _respond
-    fanout({ ...Strong, ...Category })(
-      // listen for websocket resolution from eventEmitter
-      // Does not listen on websocket directly. Needs runtime decoding, and caching for load balancing
-      listenEvent(eventEmitter),
-      // send to websocketPromise<GraphQLResponseWithData>
-      flow(
-        // format message
-        pipe({ operation, variables }, escapeQL),
-        JSON.stringify,
-        // send
-        doSend(socket)
-      )
-    ),
-    // convert runtime websocket promise to graphql data
-    escapeSocket
-  )
+export function fetch({socket, query}:{socket:WebSocket, query:t.Mixed}) {
+ 
 }
 
-/**
- * On emitted event, delete cache and return data received.
- * 
- * @param {EventEmitter} eventEmitter EventEmitter to listen on
- * @param {string} hash event name to listen for
- * @returns {unknown} data received from event
- */
-export function listenEvent(eventEmitter: EventEmitter) {
-  return (hash: string) => new Promise((resolve, reject) => {
-    eventEmitter.once(hash, data => {
-      del(`client:Resolution:${hash}`)
-      resolve(data)
-    })
-    setTimeout(() => {
-      eventEmitter.off(hash, resolve)
-      reject(new Error('Timeout waiting for peer to resolve query'))
-    }, 3000)
-  })
-}
+
 /* #endregion */
 
 
@@ -81,12 +33,10 @@ export function listenEvent(eventEmitter: EventEmitter) {
  * @param {unknown} resolvers GraphQL schema resolvers
  * @returns {(any, any) => FetchFn} fetchFn for RelayEnvironment Networking
  */
-export function peerGraphql({schema, url}:{schema:GraphQLSchema, url:string}):FetchFn  {
+export function peerGraphql({schema, url, query}:{schema:GraphQLSchema, url:string, query:t.Mixed}):FetchFn  {
   // Support peers. Currying in RelayEnvironment calls this only once
   const socket = create(url);
-  socket.onmessage = (event) => {
-    listen({schema, socket})(event)
-  }
   // Provided to RelayEnvironment Networking
-  return fetch(socket);
+  return fetch({socket, query});
 }
+
