@@ -1,7 +1,7 @@
 // Identity.ts
 import { HKT } from 'fp-ts/lib/HKT'
 import { pipe, flow } from 'fp-ts/lib/function'
-
+import sp from 'simple-peer'
 
 /**
  * @category instances
@@ -21,9 +21,37 @@ declare module 'fp-ts/lib/HKT' {
   }
 }
 
+type listen = {event:string | symbol, listener:(...args: any[]) => void };
+
 export interface Peer<A> {
   _tag: URI,
-  value: A
+  destination:A,
+  transport:{
+    signal: (data: string | sp.SignalData) => void,
+    send: (data: sp.SimplePeerData) => void,
+    on: (event:string | symbol, listener:(...args: any[]) => void) => void
+  }
+}
+
+export function signal<A>(peer:Peer<A>): () => void {
+  return () => pipe(
+    peer.destination,
+    peer.transport.signal
+  )
+}
+
+export function send<A>(peer:Peer<A>, data:unknown): () => void {
+  return () => pipe(
+    data,
+    String,
+    peer.transport.send
+  )
+}
+
+export function listen<A>(_peer:Peer<A>, {event, listener}:listen): Peer<A> {
+    const peer = Object.assign({}, _peer);
+    peer.transport.on(event, listener);
+    return peer;
 }
 
 /**
@@ -35,9 +63,10 @@ export interface Peer<A> {
 export function of<A>(a:A):Peer<A> {
   return {
     _tag: URI,
-    value: a
+    destination:a,
+    transport: new sp({initiator:true}),
+    }
   }
-}
 
 /**
  * `map` can be used to turn functions `(a: A) => B` into functions `(fa: F<A>) => F<B>` whose argument and return types
@@ -47,7 +76,7 @@ export function of<A>(a:A):Peer<A> {
  * @since 2.5.0
  */
 export function map<A, B>(fa: Peer<A>, f: (a: A) => B):Peer<B> { 
-  return pipe(fa.value, f, of)
+  return pipe(fa.destination, f, of)
 }
 
 /**
@@ -57,7 +86,7 @@ export function map<A, B>(fa: Peer<A>, f: (a: A) => B):Peer<B> {
  * @since 2.5.0 
  */
 export function ap<A, B>(fab: Peer<(a: A) => B>, fa: Peer<A>):Peer<B> {
-  return chain(fa, flow(fab.value, of))
+  return chain(fa, flow(fab.destination, of))
 }
 
 /**
@@ -68,7 +97,7 @@ export function ap<A, B>(fab: Peer<(a: A) => B>, fa: Peer<A>):Peer<B> {
  */
 export function chain<A, B>(fa: Peer<A>, f: (a:A) => Peer<B>):Peer<B> {
   return pipe(
-    fa.value,
+    fa.destination,
     f
   )
 }
