@@ -21,11 +21,9 @@ declare module 'fp-ts/lib/HKT' {
   }
 }
 
-type listen = {event:string | symbol, listener:(...args: any[]) => void };
-
 export interface Peer<A> {
   _tag: URI,
-  destination:A,
+  value:A,
   transport:{
     signal: (data: string | sp.SignalData) => void,
     send: (data: sp.SimplePeerData) => void,
@@ -33,10 +31,14 @@ export interface Peer<A> {
   }
 }
 
+export function create<A>(o:sp.Options): (p:Peer<A>) => Peer<A> {
+  return p => Object.assign({}, p, {transport: new sp(o)});
+}
+
 export function signal<A>(peer:Peer<A>): () => void {
   return () => pipe(
-    peer.destination,
-    peer.transport.signal
+    peer.value,
+    peer.transport.signal.bind(peer.transport)
   )
 }
 
@@ -44,14 +46,18 @@ export function send<A>(peer:Peer<A>, data:unknown): () => void {
   return () => pipe(
     data,
     String,
-    peer.transport.send
+    peer.transport.send.bind(peer.transport)
   )
 }
 
-export function listen<A>(_peer:Peer<A>, {event, listener}:listen): Peer<A> {
+type listen = {event:string | symbol, listener:(...args: any[]) => void };
+
+export function listen<A>({event, listener}:listen) {
+  return (_peer:Peer<A>): Peer<A> => {
     const peer = Object.assign({}, _peer);
     peer.transport.on(event, listener);
     return peer;
+  }
 }
 
 /**
@@ -63,8 +69,12 @@ export function listen<A>(_peer:Peer<A>, {event, listener}:listen): Peer<A> {
 export function of<A>(a:A):Peer<A> {
   return {
     _tag: URI,
-    destination:a,
-    transport: new sp({initiator:true}),
+    value:a,
+    transport: {
+      signal: () => {},
+      send: () => {},
+      on: () => {}
+    },
     }
   }
 
@@ -76,7 +86,9 @@ export function of<A>(a:A):Peer<A> {
  * @since 2.5.0
  */
 export function map<A, B>(fa: Peer<A>, f: (a: A) => B):Peer<B> { 
-  return pipe(fa.destination, f, of)
+  const b = {value:f(fa.value)};
+  const res = Object.assign({}, fa, b);
+  return res
 }
 
 /**
@@ -86,7 +98,7 @@ export function map<A, B>(fa: Peer<A>, f: (a: A) => B):Peer<B> {
  * @since 2.5.0 
  */
 export function ap<A, B>(fab: Peer<(a: A) => B>, fa: Peer<A>):Peer<B> {
-  return chain(fa, flow(fab.destination, of))
+  return chain(fa, flow(fab.value, of))
 }
 
 /**
@@ -97,7 +109,7 @@ export function ap<A, B>(fab: Peer<(a: A) => B>, fa: Peer<A>):Peer<B> {
  */
 export function chain<A, B>(fa: Peer<A>, f: (a:A) => Peer<B>):Peer<B> {
   return pipe(
-    fa.destination,
+    fa.value,
     f
   )
 }
