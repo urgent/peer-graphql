@@ -6,8 +6,6 @@ test('Peer signals and sends', async (done) => {
     jest.setTimeout(30000)
     expect.assertions(1);
 
-    // want to concat, transverse, and sequence peers for management.
-
     const peer = pipe(
         P.of(),
         P.create({ initiator: true, wrtc }),

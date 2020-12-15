@@ -1,21 +1,9 @@
-import { EventEmitter } from 'events'
-import { eventEmitter } from './eventEmitter'
-import { del, init } from './cache'
-import { 
-  GraphQLObjectType,
-  GraphQLString, } from 'graphql';
-
-  var query = '{ hello }';
+import * as P from './Peer'
+import { pipe } from 'fp-ts/lib/function'
+import { SignalData } from 'simple-peer'
 
 
-/**
- 
- */
-export function peerGraphql() {
-  // signal a peer
-  
-  return (query) =>  {
-    // on connect, return Relay Networking fetch function.
-  }
+export function peerGraphql(host:SignalData) {
+  return () => {}
 }
 
