@@ -35,25 +35,26 @@ export function create<A>(o:sp.Options): (p:Peer<A>) => Peer<A> {
   return p => Object.assign({}, p, {transport: new sp(o)});
 }
 
-export function signal<A>(peer:Peer<A>): () => void {
-  return () => pipe(
+export function signal<A>(peer:Peer<A>): Peer<A> {
+  pipe(
     peer.value,
     peer.transport.signal.bind(peer.transport)
   )
+  return peer;
 }
 
-export function send<A>(peer:Peer<A>, data:unknown): () => void {
-  return () => pipe(
+export function send<A>(data:unknown) {
+  return (peer:Peer<A>) => pipe(
     data,
     String,
     peer.transport.send.bind(peer.transport)
   )
 }
 
-type listen = {event:string | symbol, listener:(...args: any[]) => void };
+type listener = (...args: any[]) => void ;
 
-export function listen<A>({event, listener}:listen) {
-  return (_peer:Peer<A>): Peer<A> => {
+export function listen<A>(event:string | symbol) {
+  return (listener:listener) => (_peer:Peer<A>): Peer<A> => {
     const peer = Object.assign({}, _peer);
     peer.transport.on(event, listener);
     return peer;

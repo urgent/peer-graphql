@@ -3,40 +3,36 @@ import wrtc from 'wrtc'
 import { pipe } from 'fp-ts/lib/function'
 
 test('Peer signals and sends', async (done) => {
-    jest.setTimeout(30000)
-    expect.assertions(1);
-
     const peer = pipe(
         P.of(),
         P.create({ initiator: true, wrtc }),
-        P.listen({
-            event: 'signal',
-            listener: (signalData) => {
-                P.signal(P.map(host, () => signalData))()
-            }
-        }),
-        P.listen({
-            event: 'connect',
-            listener: () => {
-                P.send(peer, JSON.stringify({ test: true }))()
-            }
-        })
+        P.listen
+            ('signal')
+            ((signalData) => pipe(
+                P.map(host, () => signalData),
+                P.signal,
+            )),
+        P.listen
+            ('connect')
+            (() => {
+                P.send(JSON.stringify({ test: true }))(peer)
+            })
     );
+
     const host = pipe(
         P.of(),
         P.create({ wrtc }),
-        P.listen({
-            event: 'signal',
-            listener: (signalData) => {
-                P.signal(P.map(peer, () => signalData))()
-            }
-        }),
-        P.listen({
-            event: 'data',
-            listener: (data) => {
+        P.listen
+            ('signal')
+            ((signalData) => pipe(
+                P.map(peer, () => signalData),
+                P.signal,
+            )),
+        P.listen
+            ('data')
+            ((data) => {
                 expect(JSON.parse(data)).toEqual({ test: true })
                 done()
-            }
-        })
-    )
+            })
+    );
 })

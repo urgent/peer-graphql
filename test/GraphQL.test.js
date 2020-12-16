@@ -5,7 +5,7 @@ import {
     GraphQLString,
 } from 'graphql';
 
-test('Peer signals and sends', async (done) => {
+test('GraphQL queries', async (done) => {
     const promise = pipe(
         G.of({
             query: new GraphQLObjectType({
@@ -21,7 +21,7 @@ test('Peer signals and sends', async (done) => {
             }),
         }),
         G.query('{hello}')
-    )();
+    );
     expect((await promise).data.hello).toEqual("world")
     done();
 })

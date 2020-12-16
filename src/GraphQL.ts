@@ -26,8 +26,8 @@ export interface GraphQL<A> {
 }
 
 export function query<A>(query:string) {
-  return (g:GraphQL<A>): () => Promise<ExecutionResult<{ [key: string]: any; }, { [key: string]: any; }>> => {
-    return () => graphql(new GraphQLSchema(g.value), query);
+  return (g:GraphQL<A>): Promise<ExecutionResult<{ [key: string]: any; }, { [key: string]: any; }>> => {
+    return graphql(new GraphQLSchema(g.value), query);
   }
 }
 
