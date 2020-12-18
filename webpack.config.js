@@ -1,9 +1,12 @@
 const path = require('path');
+var nodeExternals = require('webpack-node-externals');
 
 module.exports = {
-    mode: 'development',
+    mode: 'production',
     devtool: 'source-map',
     entry: './src/index.ts',
+    target: 'node',
+    externals: [nodeExternals()],
     output: {
         path: path.resolve('lib'),
         filename: 'index.js',

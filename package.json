@@ -38,19 +38,18 @@
     "typescript": "^4.1.2",
     "webpack": "^5.9.0",
     "webpack-cli": "^4.2.0",
+    "webpack-node-externals": "^2.5.2",
     "wrtc": "^0.4.6"
   },
   "scripts": {
     "analyze": "source-map-explorer 'lib/*.js'",
-    "build": "webpack --mode production  && cp ./schema.peergraphql.graphql lib",
+    "build": "webpack --mode production  && cp ./schema.peergraphql.graphql lib && tsc --declarationMap && tsc --declaration",
     "build:check": "tsc --noEmit",
     "test": "yarn run build && yarn run relay && yarn run jest -- --watch --detectOpenHandles",
     "relay": "relay-compiler --src ./src --schema ./schema.peergraphql.graphql --language typescript --extensions js jsx tsx",
     "generate": "graphql-codegen --config codegen.yml --schema $npm_package_config_schema"
   },
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "dependencies": {
     "@stablelib/base64": "^1.0.0",
     "events": "^3.2.0",
@@ -64,12 +63,7 @@
     "type": "git",
     "url": "git+https://github.com/urgent/peer-graphql"
   },
-  "keywords": [
-    "peer-graphql",
-    "peer",
-    "graphql",
-    "p2p"
-  ],
+  "keywords": ["peer-graphql", "peer", "graphql", "p2p"],
   "author": "urgent",
   "bugs": {
     "url": "https://github.com/urgent/peer-graphql/projects/3"
