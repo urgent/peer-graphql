@@ -1,0 +1,23 @@
+version: '2'
+
+services:
+  node:
+    tty: true # Enables debugging capabilities when attached to this container.
+    image: 'docker.io/bitnami/node:12-debian-10'
+    command: "sh -c 'npm install && npm start'"
+    volumes:
+      - /home/steve/src/signaling-server/app:/app
+    networks:
+      - app-tier
+    hostname: 'ws'
+  nginx:
+    image: bitnami/nginx
+    networks:
+      - app-tier
+    volumes:
+      - /home/steve/src/signaling-server/server_blocks:/opt/bitnami/nginx/conf/server_blocks:ro
+    ports:
+      - '80:8080'
+networks:
+  app-tier:
+    driver: bridge
