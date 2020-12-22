@@ -13,8 +13,7 @@ fastify.register(require('fastify-websocket'), {
 
 fastify.get('/', { websocket: true }, (connection, req) => {
     connection.socket.on('message', message => {
-        // message === 'hi from client'
-        connection.socket.send('hi from server')
+        connection.socket.send(message)
     })
 })
 
