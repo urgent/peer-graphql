@@ -7,7 +7,7 @@ import graphql from 'babel-plugin-relay/macro'
  * Used to avoid gc for storing peer signature on create
  */
 const KeyQuery = graphql`
-  query ResolveSecretQuery($hash: String) {
+  query secretQuery($hash: String) {
     resolution(hash: $hash) {
       hash
       time

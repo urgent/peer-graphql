@@ -26,8 +26,11 @@ export async function peerGraphql(websocket:string) {
 
   return async (query:unknown) => {
     const result = new Promise((resolve, reject) => {
-        // change listen here
-        P.map(peer, (config:P.Config) => Object.assign({}, config, {listen: resolve}))
+        // update WebRTC listen to resolve current query
+        P.map(
+          peer, 
+          (config:P.Config) => Object.assign({}, config, {listen: resolve})
+        )
     })
     P.send(query)(peer);
     return await result;

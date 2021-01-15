@@ -44,7 +44,7 @@
     "build": "webpack --mode production  && cp ./schema.peergraphql.graphql lib && tsc --declarationMap && tsc --declaration",
     "build:check": "tsc --noEmit",
     "test": "yarn run build && yarn run relay && yarn run jest -- --watch --detectOpenHandles",
-    "relay": "relay-compiler --src ./src --schema ./schema.peergraphql.graphql --language typescript --extensions js jsx tsx",
+    "relay": "relay-compiler --src ./src --schema ./schema.peergraphql.graphql --language typescript --extensions js ts jsx tsx",
     "generate": "graphql-codegen --config codegen.yml --schema $npm_package_config_schema"
   },
   "files": [
