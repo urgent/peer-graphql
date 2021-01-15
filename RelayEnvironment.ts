@@ -6,7 +6,4 @@ const environment = new Environment({
   store: new Store(new RecordSource())
 })
 
-// pass environment to eventEmitter for state management
-state(environment)
-
 export default environment

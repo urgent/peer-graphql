@@ -2,6 +2,7 @@
 import { HKT } from 'fp-ts/lib/HKT'
 import { pipe, flow } from 'fp-ts/lib/function'
 import sp from 'simple-peer'
+import { SignalData } from 'simple-peer';
 
 /**
  * @category instances
@@ -15,15 +16,28 @@ export const URI = 'Peer'
  */
 export type URI = typeof URI
 
+// fp-ts module augmentation for new Peer type
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
     readonly [URI]: Peer<A>
   }
 }
 
+/**
+ * Represents a peer connection over WebRTC
+ */
 export interface Peer<A> {
   _tag: URI,
-  value:A,
+  value: A,
+}
+
+/**
+ * Represents Peer values required for connect, signal, and send
+ */
+export type Config = {
+  secret: nacl.SignKeyPair,
+  socket: WebSocket,
+  listen: (a:unknown) => void,
   transport:{
     signal: (data: string | sp.SignalData) => void,
     send: (data: sp.SimplePeerData) => void,
@@ -31,34 +45,65 @@ export interface Peer<A> {
   }
 }
 
-export function create<A>(o:sp.Options): (p:Peer<A>) => Peer<A> {
-  return p => Object.assign({}, p, {transport: new sp(o)});
+export const signal = {
+  /**
+   * Signal local peer with WebSocket event over WebRTC
+   *
+   * @param {Peer<Config>} peer peer to signal
+   * @param {string | sp.SignalData} value value to send to peer as signal data
+   * @returns {void}
+   */
+  in: function (peer:Peer<Config>) {
+    return (ev: MessageEvent<any>): void => {
+      peer.value.transport.signal.bind(peer.value.transport)(ev.data.signal)
+    }
+  },
+
+  /**
+   * Signal remote peer with WebRTC SignalData over WebSocket
+   * @param {Peer<Config>} peer peer with socket to send
+   * @param {SignalData} data 
+   * @returns {void}
+   */
+  out: function (peer:Peer<Config>)  {
+    return (data:SignalData):void => {
+      peer.value.socket.send(JSON.stringify( {
+        'signal': String(data),
+        'from': peer.value.secret.publicKey
+      }))
+    }
+  }
 }
 
-export function signal<A>(peer:Peer<A>): Peer<A> {
-  pipe(
-    peer.value,
-    peer.transport.signal.bind(peer.transport)
-  )
-  return peer;
+/**
+ * Connect over WebRTC with SimplePeer options
+ * 
+ * @param {sp.Options} o SimplePeer options
+ * @param {Peer<Config>} peer Peer to connect with
+ * @returns {Peer<Config>} Configured Peer listening on data and signaling
+ */
+export function connect(peer:Peer<Config>):Peer<Config> {
+        // SimplePeer data event
+        peer.value.transport.on('data', peer.value.listen)
+        // SimplePeer signal event
+        peer.value.transport.on('signal', signal.out(peer))
+        // Websocket data event to SimplePeer signal
+        peer.value.socket.onmessage = signal.in(peer);
+        return peer;
 }
 
-export function send<A>(data:unknown) {
-  return (peer:Peer<A>) => pipe(
+/**
+ * Send data to peer via WebRTC
+ * @param {unknown} data Data to send
+ * @param {Peer<A>} peer Peer with WebRTC transport
+ * @returns void
+ */
+export function send(data:unknown) {
+  return (peer:Peer<Config>) => pipe(
     data,
     String,
-    peer.transport.send.bind(peer.transport)
+    peer.value.transport.send.bind(peer.value.transport)
   )
-}
-
-type listener = (...args: any[]) => void ;
-
-export function listen<A>(event:string | symbol) {
-  return (listener:listener) => (_peer:Peer<A>): Peer<A> => {
-    const peer = Object.assign({}, _peer);
-    peer.transport.on(event, listener);
-    return peer;
-  }
 }
 
 /**
@@ -70,12 +115,7 @@ export function listen<A>(event:string | symbol) {
 export function of<A>(a:A):Peer<A> {
   return {
     _tag: URI,
-    value:a,
-    transport: {
-      signal: () => {},
-      send: () => {},
-      on: () => {}
-    },
+    value: a,
     }
   }
 
