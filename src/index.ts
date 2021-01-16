@@ -29,6 +29,7 @@ export async function peerGraphql(websocket:string) {
         // update WebRTC listen to resolve current query
         P.map(
           peer, 
+          //transport won't change here. need to remve SP event, and add a new one, right now in connect method.
           (config:P.Config) => Object.assign({}, config, {listen: resolve})
         )
     })

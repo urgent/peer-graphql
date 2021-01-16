@@ -23,14 +23,13 @@
     "@types/relay-runtime": "^10.0.4",
     "@types/simple-peer": "^9.6.1",
     "babel-loader": "^8.2.2",
-    "babel-plugin-macros": "^3.0.0",
     "fast-check": "^2.6.0",
     "jest": "^26.6.3",
     "react": "^0.0.0-experimental-4ead6b530",
     "react-dom": "^0.0.0-experimental-4ead6b530",
-    "relay-compiler": "^10.0.1",
+    "relay-compiler": "^10.1.0",
     "relay-compiler-language-typescript": "^13.0.2",
-    "relay-runtime": "^10.0.1",
+    "relay-runtime": "^10.1.2",
     "source-map-explorer": "^2.5.1",
     "tslib": "^2.0.3",
     "typescript": "^4.1.2",
@@ -59,6 +58,10 @@
     "io-ts": "^2.2.11",
     "simple-peer": "^9.9.3",
     "tweetnacl": "^1.0.3"
+  },
+  "peerDependencies": {
+    "react-relay": "^0.0.0-experimental-0b967d2e",
+    "relay-runtime": "^10.0.1"
   },
   "repository": {
     "type": "git",
